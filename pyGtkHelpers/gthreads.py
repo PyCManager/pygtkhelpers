@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    pyGtkhelpers.gthreads
+    pyGtkHelpers.gthreads
     ~~~~~~~~~~~~~~~~~~~~~
 
     Helpers for integration of aysnchronous behaviour in PyGTK.
@@ -11,7 +11,7 @@
         in order to get well-behaved threading, run :function:`initial_setup`
         as early as possible (befor doing any gui operations
 
-    :copyright: 2005-2010 by pyGtkhelpers Authors
+    :copyright: 2005-2010 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 from __future__ import with_statement

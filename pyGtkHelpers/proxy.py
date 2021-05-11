@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """
-    pyGtkhelpers.proxy
+    pyGtkHelpers.proxy
     ~~~~~~~~~~~~~~~~~~
 
     Controllers for managing data display widgets.
 
-    :copyright: 2005-2008 by pyGtkhelpers Authors
+    :copyright: 2005-2008 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 
     An example session of using a proxy::

@@ -2,7 +2,7 @@
 #
 #  pyconsole.py
 #
-#  Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+#  Copyright (C) 2021 by Patrick LUZOLO <eldorplus@gmail.com>
 #  Thanks to Geoffrey French for ideas.
 #
 #  This file is part of medit.  medit is free software; you can
@@ -41,8 +41,7 @@
 # The use case is: you have a python program, you create this widget,
 # and inspect your program interiors.
 
-from gi.repository import GObject, Gtk, Gdk, Pango
-import gtk.keysyms as _keys
+from gi.repository import GObject, Gtk, Gdk, Pango, keysyms
 import code
 import sys
 import keyword
@@ -256,21 +255,21 @@ class _ReadLine(object):
         keyval = event.keyval
 
         if not state:
-            if keyval == _keys.Return:
+            if keyval == keysyms.Return:
                 self._commit()
-            elif keyval == _keys.Up:
+            elif keyval == keysyms.Up:
                 self.__history(-1)
-            elif keyval == _keys.Down:
+            elif keyval == keysyms.Down:
                 self.__history(1)
-            elif keyval == _keys.Left:
+            elif keyval == keysyms.Left:
                 self.__move_cursor(-1)
-            elif keyval == _keys.Right:
+            elif keyval == keysyms.Right:
                 self.__move_cursor(1)
-            elif keyval == _keys.Home:
+            elif keyval == keysyms.Home:
                 self.__move_cursor(-10000)
-            elif keyval == _keys.End:
+            elif keyval == keysyms.End:
                 self.__move_cursor(10000)
-            elif keyval == _keys.Tab:
+            elif keyval == keysyms.Tab:
                 cursor = self.__get_cursor()
                 if cursor.starts_line():
                     handled = False
@@ -284,7 +283,7 @@ class _ReadLine(object):
             else:
                 handled = False
         elif state == Gtk.CONTROL_MASK:
-            if keyval == _keys.u:
+            if keyval == keysyms.u:
                 start = self.__get_start()
                 end = self.__get_cursor()
                 self.__delete(start, end)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    pyGtkhelpers.forms
+    pyGtkHelpers.forms
     ~~~~~~~~~~~~~~~~~~
 
     Providing specialized delegates that can be used to map and validate
@@ -10,7 +10,7 @@
 
     .. _Flatland: http://discorporate.us/projects/flatland/
 
-    :copyright: 2005-2008 by pyGtkhelpers Authors
+    :copyright: 2005-2008 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 from collections import OrderedDict
