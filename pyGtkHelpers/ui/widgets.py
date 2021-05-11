@@ -1,42 +1,40 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.ui.widgets
+    pyGtkHelpers.ui.widgets
     ~~~~~~~~~~~~~~~~~~~~~~~
 
     Miscellaneous additional custom widgets
 
-    :copyright: 2005-2010 by pygtkhelpers Authors
+    :copyright: 2005-2010 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-import gtk
-from pango import STYLE_ITALIC
-
-from pyGtkHelpers.utils import gsignal
+from gi.repository import Pango, Gtk
+from pyGtkHelpers.utils import gsignal, cmp
 from pyGtkHelpers.addons import GObjectPlugin
 
 
-class StringList(gtk.VBox):
+class StringList(Gtk.Box):
     """An editable list of strings
     """
 
     gsignal('content-changed')
 
     def __init__(self):
-        gtk.VBox.__init__(self, spacing=3)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=3)
         self.set_border_width(6)
         self.set_size_request(0, 150)
 
-        self.store = gtk.ListStore(str)
-        self.view = gtk.TreeView()
+        self.store = Gtk.ListStore(str)
+        self.view = Gtk.TreeView()
         self.view.set_headers_visible(False)
         self.view.set_model(self.store)
         # XXX: scrollable?
         self.pack_start(self.view, expand=True)
 
-        self.tv_col = gtk.TreeViewColumn()
-        self.text_renderer = gtk.CellRendererText()
+        self.tv_col = Gtk.TreeViewColumn()
+        self.text_renderer = Gtk.CellRendererText()
         self.tv_col.pack_start(self.text_renderer)
         self.tv_col.add_attribute(self.text_renderer, 'text', 0)
 
@@ -45,15 +43,15 @@ class StringList(gtk.VBox):
         selection = self.view.get_selection()
         selection.connect('changed', self._on_selection_changed)
 
-        hb = gtk.HButtonBox()
-        self.value_entry = gtk.Entry()
+        hb = Gtk.HButtonBox()
+        self.value_entry = Gtk.Entry()
         self.value_entry.connect('changed', self._on_value_changed)
         self.value_entry.set_sensitive(False)
         self.pack_start(self.value_entry, expand=False)
-        self.add_button = gtk.Button(stock=gtk.STOCK_NEW)
+        self.add_button = Gtk.Button(stock=Gtk.STOCK_NEW)
         self.add_button.connect('clicked', self._on_add)
         hb.pack_start(self.add_button, expand=False)
-        self.rem_button = gtk.Button(stock=gtk.STOCK_REMOVE)
+        self.rem_button = Gtk.Button(stock=Gtk.STOCK_REMOVE)
         self.rem_button.connect('clicked', self._on_rem)
         self.rem_button.set_sensitive(False)
         hb.pack_start(self.rem_button, expand=False)
@@ -107,21 +105,21 @@ class StringList(gtk.VBox):
     value = property(read, update)
 
 
-class SimpleComboBox(gtk.ComboBox):
+class SimpleComboBox(Gtk.ComboBox):
     """A simple combobox that maps descriptions to keys
     """
     __gtype_name__ = 'PyGTKHelpersSimpleComboBox'
 
     def __init__(self, choices=None, default=None):
-        gtk.ComboBox.__init__(self)
+        Gtk.ComboBox.__init__(self)
         if choices and default is None:
             raise ValueError('default choice necessary')
-        self.store = gtk.ListStore(str, object)
+        self.store = Gtk.ListStore(str, object)
         self.set_model(self.store)
         if choices is not None:
             self.set_choices(choices, default)
 
-        self.renderer = gtk.CellRendererText()
+        self.renderer = Gtk.CellRendererText()
         self.pack_start(self.renderer, True)
         self.add_attribute(self.renderer, 'text', 0)
 
@@ -133,27 +131,27 @@ class SimpleComboBox(gtk.ComboBox):
                 self.set_active_iter(iter)
 
 
-class AttrSortCombo(gtk.HBox):
+class AttrSortCombo(Gtk.Box):
     """
-    A evil utility class that hijacks a objectlist and forces ordering onto its
+    A evil utility class that hijacks a object_list and forces ordering onto its
     model.
     """
-    def __init__(self, objectlist, attribute_list, default):
-        gtk.HBox.__init__(self, spacing=3)
+    def __init__(self, object_list, attribute_list, default):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
         self.set_border_width(3)
         from pyGtkHelpers.ui.widgets import SimpleComboBox
         from pyGtkHelpers.proxy import GtkComboBoxProxy
 
-        self._objectlist = objectlist
+        self._object_list = object_list
 
         self._combo = SimpleComboBox(attribute_list, default)
         self._proxy = GtkComboBoxProxy(self._combo)
         self._proxy.connect_widget()
         self._proxy.connect('changed', self._on_configuration_changed)
-        self._order_button = gtk.ToggleToolButton(
-            stock_id=gtk.STOCK_SORT_DESCENDING)
+        self._order_button = Gtk.ToggleToolButton(
+            stock_id=Gtk.STOCK_SORT_DESCENDING)
         self._order_button.connect('toggled', self._on_configuration_changed)
-        self._label = gtk.Label('Sort')
+        self._label = Gtk.Label('Sort')
         self.pack_start(self._label, expand=False)
         self.pack_start(self._combo)
         self.pack_start(self._order_button, expand=False)
@@ -163,15 +161,15 @@ class AttrSortCombo(gtk.HBox):
     def _on_configuration_changed(self, *k):
         order_descending = self._order_button.get_active()
         if order_descending:
-            order = gtk.SORT_DESCENDING
+            order = Gtk.SORT_DESCENDING
         else:
-            order = gtk.SORT_ASCENDING
+            order = Gtk.SORT_ASCENDING
         attribute = self._proxy.read()
 
         try:
-            self._objectlist.sort_by(attribute, order)
+            self._object_list.sort_by(attribute, order)
         except AttributeError:
-            model = self._objectlist.get_model()
+            model = self._object_list.get_model()
             model.set_default_sort_func(_attr_sort_func, attribute)
             model.set_sort_column_id(-1, order)
 
@@ -203,7 +201,7 @@ class EmptyTextViewFiller(GObjectPlugin):
         self.buffer = self.widget.get_buffer()
         self.empty = not len(self.buffer.props.text)
         self.buffer.create_tag('empty-text', foreground='#666',
-                               style=STYLE_ITALIC)
+                               style=Pango.STYLE_ITALIC)
         self.widget.connect('focus-in-event', self._on_view_focus_in)
         self.widget.connect('focus-out-event', self._on_view_focus_out)
         if self.empty:

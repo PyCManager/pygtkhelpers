@@ -14,7 +14,7 @@ import itertools
 import copy
 
 from gi.repository import Gtk, Gdk
-from pyGtkHelpers.utils import gsignal
+from pyGtkHelpers.utils import gsignal, cmp
 
 
 class ObjectTreeViewBase(Gtk.TreeView):
@@ -94,17 +94,17 @@ class ObjectTreeViewBase(Gtk.TreeView):
         # index can be an integer or an iter
         return self._object_at_iter(index)
 
-    def __delitem__(self, iter):  # XXX
-        obj = self._object_at_iter(iter)
+    def __delitem__(self, itr):  # XXX
+        obj = self._object_at_iter(itr)
         del self._id_to_iter[id(obj)]
-        self.model.remove(iter)
+        self.model.remove(itr)
 
     def set_columns(self, columns):
         assert not self.columns
         self.columns = tuple(columns)
         for idx, col in enumerate(columns):
             view_col = col.create_treecolumn(self)
-            view_col.set_data('pyGtk.helpers::objectlist', self)
+            view_col.set_data('pyGtkHelpers::objectlist', self)
             self.append_column(view_col)
             # needs to be done after adding the column
             if col.expander:
@@ -469,10 +469,10 @@ class ObjectTreeViewBase(Gtk.TreeView):
     def _internal_visible_func(self, model, iter, visible_func):
         return visible_func(model[iter][0])
 
-    def _attr_sort_func(self, model, iter1, iter2, attr):
+    def _attr_sort_func(self, model, itr1, itr2, attr):
         # how the hell is this a filter model?
-        obj1 = self._object_at_iter(iter1)
-        obj2 = self._object_at_iter(iter2)
+        obj1 = self._object_at_iter(itr1)
+        obj2 = self._object_at_iter(itr2)
         return cmp(getattr(obj1, attr, None), getattr(obj2, attr, None))
 
     def _key_sort_func(self, model, iter1, iter2, key):
@@ -480,13 +480,13 @@ class ObjectTreeViewBase(Gtk.TreeView):
         obj2 = self._object_at_iter(iter2)
         return cmp(key(obj1), key(obj2))
 
-    def _attr_search_func(self, model, column, key, iter, attr):
-        obj = model[iter][0]
+    def _attr_search_func(self, model, column, key, itr, attr):
+        obj = model[itr][0]
         val = getattr(obj, attr, '')
         return not (key.lower() in str(val).lower())
 
-    def _test_search_func(self, model, column, key, iter, test):
-        obj = model[iter][0]
+    def _test_search_func(self, model, column, key, itr, test):
+        obj = model[itr][0]
         return not test(obj, key)
 
     def scroll_to(self, obj):

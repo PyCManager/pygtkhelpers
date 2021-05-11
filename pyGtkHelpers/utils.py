@@ -12,11 +12,64 @@
 
 import string
 import struct
-import sys
 import time
+import sys
+import os
 
+
+from contextlib import contextmanager
 from gi.repository import GObject, Gtk
-from cgi import escape as _xml_escape
+from html import escape as _xml_escape
+
+
+def fileno(file_or_fd):
+    fd = getattr(file_or_fd, 'fileno', lambda: file_or_fd)()
+    if not isinstance(fd, int):
+        raise ValueError("Expected a file (`.fileno()`) or a file descriptor")
+    return fd
+
+@contextmanager
+def stdout_redirected(to=os.devnull, stdout=None):
+    if stdout is None:
+        stdout = sys.stdout
+
+    stdout_fd = fileno(stdout)
+    # copy stdout_fd before it is overwritten
+    # NOTE: `copied` is inheritable on Windows when duplicating a standard stream
+    with os.fdopen(os.dup(stdout_fd), 'wb') as copied:
+        stdout.flush()  # flush library buffers that dup2 knows nothing about
+        try:
+            os.dup2(fileno(to), stdout_fd)  # $ exec >&to
+        except ValueError:  # filename
+            with open(to, 'wb') as to_file:
+                os.dup2(to_file.fileno(), stdout_fd)  # $ exec > to
+        try:
+            # allow code to be run with the redirected stdout
+            yield stdout
+        finally:
+            # restore stdout to its previous value
+            # NOTE: dup2 makes stdout_fd inheritable unconditionally
+            stdout.flush()
+            os.dup2(copied.fileno(), stdout_fd)  # $ exec >&copied
+
+
+@contextmanager
+def to_devnull(target):
+    # Redirect c extensions print statements to null
+    old_stderr_fno = os.dup(sys.stderr.fileno())
+    devnull = open(os.devnull, 'w')
+    os.dup2(devnull.fileno(), target)
+    yield
+    os.dup2(old_stderr_fno, target)
+    devnull.close()
+
+
+def no_stdout():
+    return to_devnull(1)
+
+
+def no_stderr():
+    return to_devnull(2)
 
 
 def gsignal(name, *args, **kwargs):
@@ -75,8 +128,8 @@ def _max(c):
 
 _MAX_VALUES = {int: _max('i'),
                float: float(2**1024 - 2**971),
-               long: _max('l')}
-_DEFAULT_VALUES = {str: '', float: 0.0, int: 0, long: 0L}
+               'long': _max('l')}
+_DEFAULT_VALUES = {str: '', float: 0.0, int: 0, 'long': 0}
 
 
 def gproperty(name, ptype, default=None, nick='', blurb='',
@@ -117,7 +170,7 @@ def gproperty(name, ptype, default=None, nick='', blurb='',
             name, blurb))
 
     # Specific type checking
-    if ptype == int or ptype == float or ptype == long:
+    if ptype == int or ptype == float:
         default = (kwargs.get('minimum', ptype(0)),
                    kwargs.get('maximum', _MAX_VALUES[ptype]),
                    default)
@@ -241,7 +294,7 @@ class XFormatter(string.Formatter):
         try:
             return super(XFormatter, self).get_value(key, args, kwargs)
         except LookupError:
-            if isinstance(key, basestring):
+            if isinstance(key, (str, bytes)):
                 for obj in self.lookup_objects:
                     if hasattr(obj, key):
                         return getattr(obj, key)
@@ -318,3 +371,7 @@ def dict_to_form(dict_):
                                                         optional=True))
 
     return Form.of(*schema_entries)
+
+
+def cmp(a, b):
+    return (a > b) - (a < b)

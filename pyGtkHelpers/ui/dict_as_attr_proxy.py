@@ -1,5 +1,5 @@
 class DictAsAttrProxy(object):
-    '''
+    """
     >>> d = dict(A=1, B=2)
     >>> dp = DictAsAttrProxy(d)
     >>> dp.A
@@ -15,7 +15,7 @@ class DictAsAttrProxy(object):
     >>> dp.C = 100
     >>> d
     {'A': 10, 'C': 100, 'B': 20}
-    '''
+    """
     def __init__(self, dict_, none_on_not_found=False):
         object.__setattr__(self, '_dict', dict_)
         object.__setattr__(self, '_none_on_not_found', none_on_not_found)

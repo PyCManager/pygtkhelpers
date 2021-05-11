@@ -41,7 +41,7 @@
 # The use case is: you have a python program, you create this widget,
 # and inspect your program interiors.
 
-from gi.repository import GObject, Gtk, Gdk, Pango, keysyms
+from gi.repository import GObject, Gtk, Gdk, Pango
 import code
 import sys
 import keyword
@@ -255,21 +255,21 @@ class _ReadLine(object):
         keyval = event.keyval
 
         if not state:
-            if keyval == keysyms.Return:
+            if keyval == Gtk.keysyms.Return:
                 self._commit()
-            elif keyval == keysyms.Up:
+            elif keyval == Gtk.keysyms.Up:
                 self.__history(-1)
-            elif keyval == keysyms.Down:
+            elif keyval == Gtk.keysyms.Down:
                 self.__history(1)
-            elif keyval == keysyms.Left:
+            elif keyval == Gtk.keysyms.Left:
                 self.__move_cursor(-1)
-            elif keyval == keysyms.Right:
+            elif keyval == Gtk.keysyms.Right:
                 self.__move_cursor(1)
-            elif keyval == keysyms.Home:
+            elif keyval == Gtk.keysyms.Home:
                 self.__move_cursor(-10000)
-            elif keyval == keysyms.End:
+            elif keyval == Gtk.keysyms.End:
                 self.__move_cursor(10000)
-            elif keyval == keysyms.Tab:
+            elif keyval == Gtk.keysyms.Tab:
                 cursor = self.__get_cursor()
                 if cursor.starts_line():
                     handled = False
@@ -283,7 +283,7 @@ class _ReadLine(object):
             else:
                 handled = False
         elif state == Gtk.CONTROL_MASK:
-            if keyval == keysyms.u:
+            if keyval == Gtk.keysyms.u:
                 start = self.__get_start()
                 end = self.__get_cursor()
                 self.__delete(start, end)
@@ -605,7 +605,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             pass
 
         try:
-            exec "import __builtin__" in self.locals
+            exec("import __builtin__" in self.locals)
             strings.extend(eval("dir(__builtin__)", self.locals))
         except Exception:
             pass

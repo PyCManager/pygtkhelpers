@@ -14,7 +14,7 @@
 class CheckCalled(object):
     """Utility to check whether a signal has been emitted
 
-    :param object: The Object that will fire the signal
+    :param obj: The Object that will fire the signal
     :param signal: The signal name
 
     This class should be used when testing whether a signal has been called.
@@ -32,10 +32,10 @@ class CheckCalled(object):
         >>> assert check.called_count = 2
 
     """
-    def __init__(self, object, signal):
+    def __init__(self, obj, signal):
         self.called = None
         self.called_count = 0
-        object.connect(signal, self)
+        obj.connect(signal, self)
 
     def __call__(self, *k):
         self.called = k

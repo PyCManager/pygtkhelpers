@@ -1,8 +1,8 @@
 import sys
 import logging
 
-import gtk
-from path_helpers import path
+from gi.repository import Gtk
+from pathlib import Path
 from flatland.schema import String, Form, Integer, Float, Enum
 
 from ..utils import gsignal
@@ -30,27 +30,27 @@ class Directory(String):
     pass
 
 
-class FilepathWidget(gtk.HBox):
+class FilepathWidget(Gtk.Box):
     gsignal('content-changed')
     mode = 'file'
 
     def __init__(self, patterns=None):
-        '''
+        """
         Args
         ----
 
             patterns (list) : List of tuples, where each tuple contains two
                 items: 1) label to show in file filter drop-down, and 2) list
                 of glob file patterns to match.
-        '''
-        gtk.HBox.__init__(self, spacing=3)
+        """
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
         self.set_border_width(6)
         self.set_size_request(250, -1)
-        self.filepath_entry = gtk.Entry()
+        self.filepath_entry = Gtk.Entry()
         self.filepath_entry.set_editable(False)
-        self.browse_button = gtk.Button(label='Browse...')
+        self.browse_button = Gtk.Button(label='Browse...')
         self.browse_button.connect('clicked', self.on_button_clicked)
-        self.clear_button = gtk.Button(label='Clear')
+        self.clear_button = Gtk.Button(label='Clear')
         self.clear_button.connect('clicked', self.on_clear_button_clicked)
         self.pack_start(self.filepath_entry, expand=True, fill=True)
         self.pack_start(self.browse_button, expand=False, fill=False)
@@ -58,15 +58,15 @@ class FilepathWidget(gtk.HBox):
         self.widget = proxy_for(self.filepath_entry)
         self.widget.connect_widget()
         if self.mode == 'file':
-            self.action = gtk.FILE_CHOOSER_ACTION_OPEN
+            self.action = Gtk.FileChooserAction.OPEN
         elif self.mode == 'directory':
-            self.action = gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER
+            self.action = Gtk.FileChooserAction.SELECT_FOLDER
         self.starting_dir = None
         self.show_all()
         self.patterns = patterns
 
     def on_clear_button_clicked(self, widget, data=None):
-        self.value = path('')
+        self.value = Path('')
         self.emit('content-changed')
 
     def on_button_clicked(self, widget, data=None):
@@ -76,10 +76,10 @@ class FilepathWidget(gtk.HBox):
             starting_dir = self.starting_dir
 
         if self.value:
-            if path(self.value).isdir():
-                starting_dir = path(self.value)
-            elif path(self.value).parent.isdir():
-                starting_dir = path(self.value).parent
+            if Path(self.value).is_dir():
+                starting_dir = Path(self.value)
+            elif Path(self.value).parent.is_dir():
+                starting_dir = Path(self.value).parent
         if self.mode == 'file':
             response, filepath =\
                 self.browse_for_file('Select file path', action=self.action,
@@ -90,27 +90,27 @@ class FilepathWidget(gtk.HBox):
                                      starting_dir=starting_dir)
         else:
             raise ValueError('[Filepath] Invalid mode: %s' % self.mode)
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             logging.info('got new filepath: %s' % filepath)
-            self.value = path(filepath)
+            self.value = Path(filepath)
             self.emit('content-changed')
 
     def browse_for_file(self, title='Select file',
-                        action=gtk.FILE_CHOOSER_ACTION_SAVE,
-                        buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                                 gtk.STOCK_OPEN, gtk.RESPONSE_OK),
+                        action=Gtk.FileChooserAction.SAVE,
+                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                 Gtk.STOCK_OPEN, Gtk.ResponseType.OK),
                         starting_dir=None):
-        dialog = gtk.FileChooserDialog(title=title, action=action,
+        dialog = Gtk.FileChooserDialog(title=title, action=action,
                                        buttons=buttons)
         if starting_dir:
             dialog.set_current_folder(starting_dir)
-        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.set_default_response(Gtk.ResponseType.OK)
 
         if self.patterns is not None:
             for i, (name_i, patterns_i) in enumerate(self.patterns):
                 #     name_i (str) : Label to show in file filter drop-down.
                 #     patterns_i (list) : List of glob file patterns to match.
-                filter_i = gtk.FileFilter()
+                filter_i = Gtk.FileFilter()
                 filter_i.set_name(name_i)
                 for pattern_j in patterns_i:
                     filter_i.add_pattern(pattern_j)
@@ -121,7 +121,7 @@ class FilepathWidget(gtk.HBox):
                     dialog.set_filter(filter_i)
         response = dialog.run()
 
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             value = dialog.get_filename()
         else:
             value = None
@@ -170,8 +170,8 @@ class FloatBuilder(IntegerBuilder):
     default_style = 'spin'
 
     styles = {
-        'spin': gtk.SpinButton,
-        'slider': gtk.HScale,
+        'spin': Gtk.SpinButton,
+        'slider': Gtk.HScale,
     }
 
     def build(self, widget, style, element, options):
@@ -250,7 +250,7 @@ widget_proxies.update({
 
 
 if __name__ == '__main__':
-    window = gtk.Window()
+    window = Gtk.Window()
     form = Form.of(
         Integer.named('overlay_opacity').using(default=20, optional=True),
         Float.named('float_value').using(default=10.37, optional=True),
@@ -258,4 +258,4 @@ if __name__ == '__main__':
         Directory.named('devices_directory').using(default='', optional=True),
     )
     dialog = FormViewDialog(form)
-    print dialog.run()
+    print(dialog.run())

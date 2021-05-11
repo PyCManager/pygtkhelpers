@@ -24,33 +24,33 @@ from gi.repository import GObject, Gtk
 
 
 image_types = {
-    Gtk.MESSAGE_INFO: Gtk.STOCK_DIALOG_INFO,
-    Gtk.MESSAGE_WARNING: Gtk.STOCK_DIALOG_WARNING,
-    Gtk.MESSAGE_QUESTION: Gtk.STOCK_DIALOG_QUESTION,
-    Gtk.MESSAGE_ERROR: Gtk.STOCK_DIALOG_ERROR
+    Gtk.MessageType.INFO: Gtk.STOCK_DIALOG_INFO,
+    Gtk.MessageType.WARNING: Gtk.STOCK_DIALOG_WARNING,
+    Gtk.MessageType.QUESTION: Gtk.STOCK_DIALOG_QUESTION,
+    Gtk.MessageType.ERROR: Gtk.STOCK_DIALOG_ERROR
 }
 
 button_types = {
-    Gtk.BUTTONS_NONE: (),
-    Gtk.BUTTONS_OK: (
+    None: (),
+    Gtk.ButtonsType.OK: (
         Gtk.STOCK_OK,
         Gtk.ResponseType.OK,
     ),
-    Gtk.BUTTONS_CLOSE: (
+    Gtk.ButtonsType.CLOSE: (
         Gtk.STOCK_CLOSE,
         Gtk.ResponseType.CLOSE,
     ),
-    Gtk.BUTTONS_CANCEL: (
+    Gtk.ButtonsType.CANCEL: (
         Gtk.STOCK_CANCEL,
         Gtk.ResponseType.CANCEL,
     ),
-    Gtk.BUTTONS_YES_NO: (
+    Gtk.ButtonsType.YES_NO: (
         Gtk.STOCK_NO,
         Gtk.ResponseType.NO,
         Gtk.STOCK_YES,
         Gtk.ResponseType.YES,
     ),
-    Gtk.BUTTONS_OK_CANCEL: (
+    Gtk.ButtonsType.OK_CANCEL: (
         Gtk.STOCK_CANCEL,
         Gtk.ResponseType.CANCEL,
         Gtk.STOCK_OK,
@@ -69,8 +69,8 @@ def _destroy(win):
 
 class AlertDialog(Gtk.Dialog):
     def __init__(self, parent, flags,
-                 type=Gtk.MESSAGE_INFO,
-                 buttons=Gtk.BUTTONS_NONE,
+                 type=Gtk.MessageType.INFO,
+                 buttons=None,
                  ):
         # XXX: better errors
         assert type in image_types, 'not a valid type'
@@ -97,11 +97,11 @@ class AlertDialog(Gtk.Dialog):
             label.set_selectable(True)
             label.set_alignment(0.0, 0.5)
 
-        hbox = Gtk.HBox(False, 12)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         hbox.set_border_width(5)
         hbox.pack_start(self.image, False, False)
 
-        self.label_vbox = vbox = Gtk.VBox(False, 0)
+        self.label_vbox = vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         hbox.pack_start(vbox, False, False)
         vbox.pack_start(self.primary, False, False)
         vbox.pack_start(self.secondary, False, False)
@@ -140,7 +140,7 @@ class AlertDialog(Gtk.Dialog):
 def _message_dialog(type, short,
                     long=None,
                     parent=None,
-                    buttons=Gtk.BUTTONS_OK,
+                    buttons=Gtk.ButtonsType.OK,
                     default=None,  # XXX: kiwi had -1 there, why?
                     alt_button_order=None,
                     _before_run=None):  # for unittests
@@ -149,11 +149,11 @@ def _message_dialog(type, short,
         buttons = []
     else:
         assert buttons is None or isinstance(buttons, tuple)
-        dialog_buttons = Gtk.BUTTONS_NONE
+        dialog_buttons = None
 
     assert parent is None or isinstance(parent, Gtk.Window)
 
-    dialog = AlertDialog(parent=parent, flags=Gtk.DIALOG_MODAL, type=type,
+    dialog = AlertDialog(parent=parent, flags=Gtk.DialogFlags.MODAL, type=type,
                          buttons=dialog_buttons)
     dialog.set_primary(short)
 
@@ -161,7 +161,7 @@ def _message_dialog(type, short,
         # XXX: test all cases
         if isinstance(long, Gtk.Widget):
             dialog.set_details_widget(long)
-        elif isinstance(long, basestring):
+        elif isinstance(long, (str, bytes)):
             dialog.set_details(long)
         else:
             raise TypeError('long must be a string or a Widget, not %r' % long)
@@ -205,7 +205,7 @@ def add_filters(dialog, filters):
 
 
 def simple(type, short, long=None,
-           parent=None, buttons=Gtk.BUTTONS_OK, default=None, **kw):
+           parent=None, buttons=Gtk.ButtonsType.OK, default=None, **kw):
     """A simple dialog
 
     :param type: The type of dialog
@@ -215,7 +215,7 @@ def simple(type, short, long=None,
     :param buttons: A buttons enum
     :param default: A default response
     """
-    if buttons == Gtk.BUTTONS_OK:
+    if buttons == Gtk.ButtonsType.OK:
         default = Gtk.ResponseType.OK
     return _message_dialog(type, short, long, parent=parent, buttons=buttons,
                            default=default, **kw)
@@ -281,7 +281,7 @@ def ask_overwrite(filename, parent=None, **kw):
     submsg2 = 'Do you wish to replace it with the current one?'
     text = ('<span weight="bold" size="larger">%s</span>\n'
             '\n%s\n' % (submsg1, submsg2))
-    result = _message_dialog(Gtk.MESSAGE_ERROR, text, parent=parent,
+    result = _message_dialog(Gtk.MessageType.ERROR, text, parent=parent,
                              buttons=((Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL),
                                       (_("Replace"), Gtk.ResponseType.YES)), **kw)
     return result == Gtk.ResponseType.YES
@@ -323,7 +323,7 @@ def save(title='Save', parent=None, current_name='', folder=None,
 
 
 def input(title, value=None, label=None, parent=None, _before_run=None):
-    d = Gtk.Dialog(title=title, buttons=button_types[Gtk.BUTTONS_OK_CANCEL])
+    d = Gtk.Dialog(title=title, buttons=button_types[Gtk.ButtonsType.OK_CANCEL])
 
     e = Gtk.Entry()
     if value:
@@ -365,22 +365,22 @@ select_folder = partial(open_filechooser,
 
 
 # Show an error dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple` parameters
-error = partial(simple, Gtk.MESSAGE_ERROR)
+error = partial(simple, Gtk.MessageType.ERROR)
 
 
 # Show an info dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple` parameters
-info = partial(simple, Gtk.MESSAGE_INFO)
+info = partial(simple, Gtk.MessageType.INFO)
 
 
 # Show a warning dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple` parameters
-warning = partial(simple, Gtk.MESSAGE_WARNING)
+warning = partial(simple, Gtk.MessageType.WARNING)
 
 
 #  A yes/no question dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple`
 #  parameters
-yesno = partial(simple, Gtk.MESSAGE_WARNING,
+yesno = partial(simple, Gtk.MessageType.WARNING,
                 default=Gtk.ResponseType.YES,
-                buttons=Gtk.BUTTONS_YES_NO,)
+                buttons=Gtk.ButtonsType.YES_NO,)
 
 
 def animation_dialog(images, delay_s=1., loop=True, **kwargs):

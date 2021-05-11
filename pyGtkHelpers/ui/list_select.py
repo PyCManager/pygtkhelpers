@@ -1,9 +1,8 @@
-import gtk
+from gi.repository import Gtk
 from pyGtkHelpers.delegates import WindowView, SlaveView
 from pyGtkHelpers.ui.objectlist import ObjectList, Column
 from pyGtkHelpers.utils import gsignal
-
-from .dict_as_attr_proxy import DictAsAttrProxy
+from pyGtkHelpers.ui.dict_as_attr_proxy import DictAsAttrProxy
 
 
 class ListSelectView(SlaveView):
@@ -16,9 +15,10 @@ class ListSelectView(SlaveView):
         self.column_name = column_name
         self.items = items
         super(SlaveView, self).__init__()
+        # self.create_ui()
 
     def create_ui(self):
-        self.widget = gtk.VBox()
+        self.widget = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         columns = [Column(attr=self.column_name, sortable=True, editable=False,
                           resizeable=True)]
         self.list_box = ObjectList(columns)
@@ -26,7 +26,7 @@ class ListSelectView(SlaveView):
             self.add_item(item)
 
         s = self.list_box.get_selection()
-        s.set_mode(gtk.SELECTION_MULTIPLE)
+        s.set_mode(Gtk.SelectionMode.MULTIPLE)
 
         self.list_box.show_all()
         self.widget.pack_start(self.list_box)
@@ -45,11 +45,10 @@ class ListSelectView(SlaveView):
 
 class TestWindow(WindowView):
     def create_ui(self):
-        self.list_box = self.add_slave(ListSelectView(['hello', 'world']),
-                                       'widget')
+        self.list_box = self.add_slave(ListSelectView(['hello', 'world']).create_ui(), 'widget')
 
     def on_list_box__selection_changed(self, list_box, selected_items):
-        print selected_items
+        print(selected_items)
 
 
 if __name__ == '__main__':

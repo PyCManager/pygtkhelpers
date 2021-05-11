@@ -1,14 +1,13 @@
-from collections import OrderedDict
 import logging
 import types
 
 from flatland import Boolean, Enum, Float, Form, Integer, String
 from flatland.validation import ValueAtLeast, ValueAtMost
-from redirect_io import nostderr
+from collections import OrderedDict
+from pyGtkHelpers.utils import no_stderr
 from gi.repository import Gtk
-import jsonschema
-import pandas as pd
-
+from jsonschema import Draft4Validator
+from pandas import DataFrame
 from .ui.form_view_dialog import FormViewDialog, create_form_view
 
 logger = logging.getLogger(__name__)
@@ -113,7 +112,7 @@ def get_fields_frame(schema):
     get_types(schema['properties'], get_field_record)
 
     # Order by level, then explicit index.
-    df_fields = pd.DataFrame(sorted(fields), columns=['level_i', 'field_i',
+    df_fields = DataFrame(sorted(fields), columns=['level_i', 'field_i',
                                                       'parents', 'field',
                                                       'field_type', 'default'])
 
@@ -194,7 +193,7 @@ class SchemaDialog(FormViewDialog):
     default_parent = None
 
     def __init__(self, schema, **kwargs):
-        self.validator = jsonschema.Draft4Validator(schema)
+        self.validator = Draft4Validator(schema)
         self.df_fields = get_fields_frame(schema)
         form_class = fields_frame_to_flatland_form_class(self.df_fields)
         super(SchemaDialog, self).__init__(form_class, **kwargs)
@@ -204,7 +203,7 @@ class SchemaDialog(FormViewDialog):
         self.label_error = Gtk.Label()
         self.label_event_box = Gtk.EventBox()
         self.label_event_box.add(self.label_error)
-        self.vbox_errors = Gtk.VBox()
+        self.vbox_errors = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.vbox_errors.add(self.label_event_box)
         self.vbox_form.add(self.vbox_errors)
         self.vbox_errors.show_all()
@@ -432,7 +431,7 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
     if not device_name and device_name is not None:
         dialog = SchemaDialog(schema, **kwargs)
     else:
-        with nostderr():
+        with no_stderr():
             import pygst_utils as pu
 
         Gtk.threads_init()
@@ -455,7 +454,7 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
         pipeline_command = pu.pipeline_command_from_json(config,
                                                          colorspace='rgb')
         dialog = MetaDataDialog(schema, pipeline_command, **kwargs)
-    with nostderr():
+    with no_stderr():
         valid, results = dialog.run(values=data)
     if not valid:
         raise ValueError('Invalid values.')

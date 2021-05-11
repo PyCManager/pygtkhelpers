@@ -3,6 +3,7 @@
 MANIFEST
 .project
 .pydevproject
+.eggs
 *.egg-info
 dist
 build

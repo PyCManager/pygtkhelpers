@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.ui
+    pyGtkHelpers.ui
     ~~~~~~~~~~~~~~~
 
     UI Components.
 
-    :copyright: 2005-2010 by pygtkhelpers Authors
+    :copyright: 2021 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
-import dialogs
-import dict_as_attr_proxy
-import extra_dialogs
-import extra_widgets
-import form_view_dialog
-import list_select
-import notebook
-import objectlist
-import views
-import widgets
+from .dialogs import *
+from .dict_as_attr_proxy import *
+from .extra_dialogs import *
+from .extra_widgets import *
+from .form_view_dialog import *
+from .list_select import *
+from .notebook import *
+from .objectlist import *
+from .views import *
+from .widgets import *

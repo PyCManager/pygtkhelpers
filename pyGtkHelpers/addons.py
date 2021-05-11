@@ -8,7 +8,6 @@
 
     :copyright: 2010 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
-
 """
 
 from pyGtkHelpers.utils import GObjectUserDataProxy

@@ -3,10 +3,10 @@ import collections
 import webbrowser
 
 from gi.repository import Gtk
-from path_helpers import path
-from ipython_helpers.notebook import SessionManager
+from pathlib import Path
 from ..delegates import SlaveView
 from .dialogs import yesno, add_filters
+from .session import SessionManager
 
 
 class NotebookManagerView(SlaveView):
@@ -14,7 +14,7 @@ class NotebookManagerView(SlaveView):
         super(NotebookManagerView, self).__init__()
         if notebook_dir is None:
             notebook_dir = os.getcwd()
-        self.notebook_dir = path(notebook_dir).abspath()
+        self.notebook_dir = Path(notebook_dir).resolve()
         self.template_dir = template_dir
         self.notebook_manager = SessionManager()
 
@@ -24,7 +24,7 @@ class NotebookManagerView(SlaveView):
                             parent=self.parent,
                             flags=Gtk.DIALOG_MODAL |
                             Gtk.DIALOG_DESTROY_WITH_PARENT,
-                            buttons=(Gtk.STOCK_OK, Gtk.RESPONSE_OK))
+                            buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK))
         dialog.set_transient_for(self.parent)
         dialog.get_content_area().pack_start(session_list.widget)
         return dialog
@@ -107,7 +107,7 @@ class NotebookManagerView(SlaveView):
             dialog.set_current_folder(self.template_dir)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            selected_path = path(dialog.get_filename())
+            selected_path = Path(dialog.get_filename())
             output_path = self.notebook_dir.joinpath(selected_path.name)
 
             overwrite = False
@@ -176,7 +176,7 @@ class NotebookManagerList(SlaveView):
 
         for i, (root, session) in enumerate(sessions.iteritems()):
             i += 1
-            root = path(root)
+            root = Path(root)
             name_label = Gtk.Label(root.name)
             name_label.set_tooltip_text(str(root))
             url_label = Gtk.Label(session.address)

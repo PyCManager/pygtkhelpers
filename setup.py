@@ -35,33 +35,40 @@ helpers and utilities to help debug PyGTK applications.
 """.strip()
 
 
-install_requires = ['cairo-helpers>=0.2.post1', 'flatland-fork>=0.4.post2',
-                    'jupyter-helpers>=0.10', 'si-prefix>=0.4',
-                    'svg-model>=0.5.post18', 'redirect_io', 'jsonschema',
-                    'trollius>=2.1']
+install_requires = [
+    #'cairo-helpers>=0.2.post1',
+    'flatland>=0.9.1',
+    'ipython-helpers>=0.5.post1',
+    'si-prefix>=1.2.2',
+    #'svg-model>=0.5.post18',
+    'jsonschema',
+    'pandas',
+    'Pillow',
+    #'zbar-lite'
+    #'trollius>=2.1'
+]
 
 # Platform-specific package requirements.
 if platform.system() == 'Windows':
     install_requires += []
 else:
     try:
-        import gtk
+        import gi
     except ImportError:
-        print >> sys.stderr, ('Please install Python bindings for Gtk 2 using '
-                              'your systems package manager.')
+        print(('Please install Python bindings for Gtk 3 using your systems package manager.'), file=sys.stderr)
 
 
-setup(name='wheeler.pygtkhelpers',
+setup(name='wheeler.pyGtkHelpers',
       version=versioneer.get_version(),
       cmdclass=versioneer.get_cmdclass(),
-      author='Christian Fobel',
-      author_email='christian@fobel.net',
-      url='https://github.com/sci-bots/pygtk_helpers',
+      author='Patrick LUZOLO',
+      author_email='eldorplus@gmail.com',
+      url='https://github.com/PyCManager/pygtkhelpers',
       description=short_description,
       long_description=long_description,
       license='LGPL-3.0',
       install_requires=install_requires,
-      packages=['pygtkhelpers', 'pygtkhelpers.ui', 'pygtkhelpers.debug',
-                'pygtkhelpers.ui.objectlist', 'pygtkhelpers.ui.views'],
-      package_data={'pygtkhelpers': ['ui/glade/*.glade',
+      packages=['pyGtkHelpers', 'pyGtkHelpers.ui', 'pyGtkHelpers.debug',
+                'pyGtkHelpers.ui.objectlist', 'pyGtkHelpers.ui.views'],
+      package_data={'pyGtkHelpers': ['ui/glade/*.glade',
                                      'ui/views/glade/*.glade']})
