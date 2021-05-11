@@ -5,7 +5,7 @@ import re
 import sys
 
 from pyGtkhelpers.schema import schema_dialog
-import gtk
+import Gtk
 
 
 def parse_args(args=None):
@@ -15,7 +15,7 @@ def parse_args(args=None):
         args = sys.argv
 
     parser = ArgumentParser(description='Barcode scanner based on GStreamer, '
-                            'zbar, and gtk.')
+                            'zbar, and Gtk.')
     log_levels = ('critical', 'error', 'warning', 'info', 'debug', 'notset')
 
     parser.add_argument('-l', '--log-level', type=str, choices=log_levels,
@@ -35,7 +35,7 @@ def parse_args(args=None):
 
 
 def main(args=None):
-    gtk.threads_init()
+    Gtk.threads_init()
     args = parse_args(args)
 
     schema = json.loads(args.schema)
@@ -45,14 +45,14 @@ def main(args=None):
     try:
         results = schema_dialog(schema, device_name=device_name,
                                 max_width=args.max_width, max_fps=args.max_fps)
-    except ValueError, exception:
-        print >> sys.stderr, 'Error: {}'.format(exception)
+    except ValueError as exception:
+        print('Error: {}'.format(exception), file=sys.stderr)
         raise SystemExit(-1)
-    except KeyError, exception:
-        print >> sys.stderr, 'Error: {}'.format(exception)
+    except KeyError as exception:
+        print('Error: {}'.format(exception), file=sys.stderr)
         raise SystemExit(-2)
     else:
-        print json.dumps(results)
+        print(json.dumps(results))
 
 
 if __name__ == '__main__':

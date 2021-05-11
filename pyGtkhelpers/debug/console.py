@@ -30,7 +30,7 @@
 # To modify output appearance, set attributes of console.stdout_tag and
 # console.stderr_tag.
 #
-# Console may subclass a type other than gtk.TextView, to allow syntax
+# Console may subclass a type other than Gtk.TextView, to allow syntax
 # highlighting and stuff,
 # e.g.:
 #   console_type = pyconsole.ConsoleType(moo.edit.TextView)
@@ -41,10 +41,7 @@
 # The use case is: you have a python program, you create this widget,
 # and inspect your program interiors.
 
-import gtk
-import gtk.gdk as gdk
-import gobject
-import pango
+from gi.repository import GObject, Gtk, Gdk, Pango
 import gtk.keysyms as _keys
 import code
 import sys
@@ -54,7 +51,11 @@ import re
 
 # commonprefix() from posixpath
 def _commonprefix(m):
-    "Given a list of pathnames, returns the longest common leading component"
+    """
+    Given a list of pathnames, returns the longest common leading component
+    :param m:
+    :return:
+    """
     if not m:
         return ''
     prefix = m[0]
@@ -115,8 +116,8 @@ class _ReadLine(object):
     def __init__(self):
         object.__init__(self)
 
-        self.set_wrap_mode(gtk.WRAP_CHAR)
-        self.modify_font(pango.FontDescription("Monospace"))
+        self.set_wrap_mode(Gtk.WRAP_CHAR)
+        self.modify_font(Pango.FontDescription("Monospace"))
 
         self.buffer = self.get_buffer()
         self.buffer.connect("insert-text", self.on_buf_insert)
@@ -250,8 +251,8 @@ class _ReadLine(object):
         self.tab_pressed = 0
         handled = True
 
-        state = event.state & (gdk.SHIFT_MASK | gdk.CONTROL_MASK |
-                               gdk.MOD1_MASK)
+        state = event.state & (Gtk.SHIFT_MASK | Gtk.CONTROL_MASK |
+                               Gtk.MOD1_MASK)
         keyval = event.keyval
 
         if not state:
@@ -282,7 +283,7 @@ class _ReadLine(object):
                         self.__complete()
             else:
                 handled = False
-        elif state == gdk.CONTROL_MASK:
+        elif state == Gtk.CONTROL_MASK:
             if keyval == _keys.u:
                 start = self.__get_start()
                 end = self.__get_cursor()
@@ -352,9 +353,9 @@ class _ReadLine(object):
         self.__delete(iter, end)
 
     def __get_width(self):
-        if not (self.flags() & gtk.REALIZED):
+        if not (self.flags() & Gtk.REALIZED):
             return 80
-        layout = pango.Layout(self.get_pango_context())
+        layout = Pango.Layout(self.get_pango_context())
         letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         layout.set_text(letters)
         pix_width = layout.get_pixel_size()[0]
@@ -543,7 +544,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
             self.showtraceback()
 
     def runcode(self, code):
-        if gtk.pygtk_version[1] < 8:
+        if Gtk.pygtk_version[1] < 8:
             self.do_command(code)
         else:
             self.emit("command", code)
@@ -630,7 +631,7 @@ class _Console(_ReadLine, code.InteractiveInterpreter):
         raise IOError('cant truncate fake file')
 
 
-def ReadLineType(t=gtk.TextView):
+def ReadLineType(t=Gtk.TextView):
     class readline(t, _ReadLine):
         def __init__(self, *args, **kwargs):
             t.__init__(self)
@@ -638,20 +639,20 @@ def ReadLineType(t=gtk.TextView):
 
         def do_key_press_event(self, event):
             return _ReadLine.do_key_press_event(self, event, t)
-    gobject.type_register(readline)
+    GObject.type_register(readline)
     return readline
 
 
-def ConsoleType(t=gtk.TextView):
+def ConsoleType(t=Gtk.TextView):
     class console_type(t, _Console):
         __gsignals__ = {
-            'command': (gobject.SIGNAL_RUN_LAST, gobject.TYPE_NONE,
+            'command': (GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE,
                         (object, )),
             'key-press-event': 'override'}
 
         def __init__(self, *args, **kwargs):
-            if gtk.pygtk_version[1] < 8:
-                gobject.GObject.__init__(self)
+            if Gtk.pygtk_version[1] < 8:
+                GObject.GObject.__init__(self)
             else:
                 t.__init__(self)
             _Console.__init__(self, *args, **kwargs)
@@ -662,8 +663,8 @@ def ConsoleType(t=gtk.TextView):
         def do_key_press_event(self, event):
             return _Console.do_key_press_event(self, event, t)
 
-    if gtk.pygtk_version[1] < 8:
-        gobject.type_register(console_type)
+    if Gtk.pygtk_version[1] < 8:
+        GObject.type_register(console_type)
 
     return console_type
 
@@ -686,24 +687,24 @@ def _create_widget(start_script):
         console = Console(banner="Hello there!",
                           use_rlcompleter=False,
                           start_script=start_script)
-    console.modify_font(pango.FontDescription("Monospace"))
+    console.modify_font(Pango.FontDescription("Monospace"))
     return console
 
 
-def _make_window(start_script="from gtk import *\n"):
-    window = gtk.Window()
+def _make_window(start_script="from Gtk import *\n"):
+    window = Gtk.Window()
     window.set_title("pyconsole.py")
-    swin = gtk.ScrolledWindow()
-    swin.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+    swin = Gtk.ScrolledWindow()
+    swin.set_policy(Gtk.POLICY_AUTOMATIC, Gtk.POLICY_ALWAYS)
     window.add(swin)
     console = _create_widget(start_script)
     swin.add(console)
     window.set_default_size(500, 400)
     window.show_all()
 
-    if not gtk.main_level():
-        window.connect("destroy", gtk.main_quit)
-        gtk.main()
+    if not Gtk.main_level():
+        window.connect("destroy", Gtk.main_quit)
+        Gtk.main()
 
     return console
 

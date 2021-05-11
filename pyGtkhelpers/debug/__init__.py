@@ -1,5 +1,5 @@
 """
-    pygtkheplers.debug
+    pyGtkhelpers.debug
     ~~~~~~~~~~~~~~~~~~
 
     a library for ui integrated traceback handling in pygtk

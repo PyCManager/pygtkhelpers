@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.ui.objectlist.column
+    pyGtkhelpers.ui.objectlist.column
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-    :copyright: 2005-2008 by pygtkhelpers Authors
+    :copyright: 2005-2008 by pyGtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-import gtk
+from gi.repository import GObject, Gtk
 
 
 class PropertyMapper(object):
@@ -103,8 +103,8 @@ class Cell(object):
 
     def create_renderer(self, column, objectlist):
         # XXX: extend to more types
-        if self.use_stock or self.type == gtk.gdk.Pixbuf:
-            cell = gtk.CellRendererPixbuf()
+        if self.use_stock or self.type == Gtk.gdk.Pixbuf:
+            cell = Gtk.CellRendererPixbuf()
         elif self.use_checkbox or self.use_radio:
             cell = CellRendererToggle(self, objectlist)
         elif self.use_progress:
@@ -116,7 +116,7 @@ class Cell(object):
             cell = CellRendererCombo(self, objectlist, self.choices)
         else:
             cell = CellRendererText(self, objectlist)
-        cell.set_data('pygtkhelpers::cell', self)
+        cell.set_data('pyGtkhelpers::cell', self)
         for prop, value in self.cell_props.items():
             cell.set_property(prop, value)
         return cell
@@ -124,7 +124,7 @@ class Cell(object):
     def _calculate_default_prop(self):
         if self.use_stock:
             primary_prop = 'stock-id'
-        elif self.type == gtk.gdk.Pixbuf:
+        elif self.type == Gtk.gdk.Pixbuf:
             primary_prop = 'pixbuf'
         elif self.use_checkbox or self.use_radio:
             primary_prop = 'active'
@@ -201,28 +201,28 @@ class Column(object):
             self.cells = [Cell(attr, type, **kwargs)]
 
     def create_treecolumn(self, objectlist):
-        """Create a gtk.TreeViewColumn for the configuration.
+        """Create a Gtk.TreeViewColumn for the configuration.
         """
-        col = gtk.TreeViewColumn(self.title)
-        col.set_data('pygtkhelpers::objectlist', objectlist)
-        col.set_data('pygtkhelpers::column', self)
+        col = Gtk.TreeViewColumn(self.title)
+        col.set_data('pyGtkhelpers::objectlist', objectlist)
+        col.set_data('pyGtkhelpers::column', self)
         col.props.visible = self.visible
         if self.expand is not None:
             col.props.expand = self.expand
         if self.resizable is not None:
             col.props.resizable = self.resizable
         if self.width is not None:
-            col.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+            col.set_sizing(Gtk.TREE_VIEW_COLUMN_FIXED)
             col.set_fixed_width(self.width)
         for cell in self.cells:
             view_cell = cell.create_renderer(self, objectlist)
-            view_cell.set_data('pygtkhelpers::column', self)
+            view_cell.set_data('pyGtkhelpers::column', self)
             # XXX: better control over packing
             col.pack_start(view_cell)
             col.set_cell_data_func(view_cell, cell.cell_data_func)
         col.set_reorderable(True)
         col.set_sort_indicator(False)
-        col.set_sort_order(gtk.SORT_DESCENDING)
+        col.set_sort_order(Gtk.SORT_DESCENDING)
         if objectlist and objectlist.sortable and self.sorted:
             idx = objectlist.columns.index(self)
             sort_func = self._default_sort_func
@@ -240,7 +240,7 @@ class Column(object):
             raise ValueError('Tooltip types must be in %r.' % TOOLTIP_TYPES)
         self.tooltip_value = kw.get('tooltip_value')
         self.tooltip_image_size = kw.get('tooltip_image_size',
-                                         gtk.ICON_SIZE_DIALOG)
+                                         Gtk.ICON_SIZE_DIALOG)
 
     def search_by(self, objectlist):
         """Search by this column on an ObjectList
@@ -289,7 +289,7 @@ class Column(object):
 class EditableCellMixin(object):
 
     def __init__(self, cell, objectlist):
-        gtk.CellRendererText.__init__(self)
+        Gtk.CellRendererText.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
         self.set_property('editable', cell.editable)
@@ -308,27 +308,27 @@ class EditableCellMixin(object):
             self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
-class CellRendererText(EditableCellMixin, gtk.CellRendererText):
+class CellRendererText(EditableCellMixin, Gtk.CellRendererText):
 
     def __init__(self, cell, objectlist):
-        gtk.CellRendererText.__init__(self)
+        Gtk.CellRendererText.__init__(self)
         EditableCellMixin.__init__(self, cell, objectlist)
         ellipsize = cell.kwargs.get('ellipsize')
         if ellipsize is not None:
             self.set_property('ellipsize', ellipsize)
 
 
-class CellRendererSpin(EditableCellMixin, gtk.CellRendererSpin):
+class CellRendererSpin(EditableCellMixin, Gtk.CellRendererSpin):
 
     def __init__(self, cell, objectlist):
-        gtk.CellRendererSpin.__init__(self)
+        Gtk.CellRendererSpin.__init__(self)
         EditableCellMixin.__init__(self, cell, objectlist)
         adj = cell.kwargs.get('adjustment', None)
         if adj is None:
             smin = cell.kwargs.get('min', 0)
             smax = cell.kwargs.get('max', 2 ** 20)
             step = cell.kwargs.get('step', 1)
-            adj = gtk.Adjustment(0, smin, smax, step)
+            adj = Gtk.Adjustment(0, smin, smax, step)
         self.set_property('adjustment', adj)
         digits = cell.kwargs.get('digits', None)
         if digits is None:
@@ -339,9 +339,9 @@ class CellRendererSpin(EditableCellMixin, gtk.CellRendererSpin):
         self.set_property('digits', digits)
 
 
-class CellRendererToggle(gtk.CellRendererToggle):
+class CellRendererToggle(Gtk.CellRendererToggle):
     def __init__(self, cell, objectlist):
-        gtk.CellRendererToggle.__init__(self)
+        Gtk.CellRendererToggle.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
         self.set_property('radio', not cell.use_checkbox)
@@ -356,9 +356,9 @@ class CellRendererToggle(gtk.CellRendererToggle):
         self.objectlist.emit('item-changed', obj, self.cell.attr, value)
 
 
-class CellRendererProgress(gtk.CellRendererProgress):
+class CellRendererProgress(Gtk.CellRendererProgress):
     def __init__(self, cell, objectlist):
-        gtk.CellRendererProgress.__init__(self)
+        Gtk.CellRendererProgress.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
         text = cell.kwargs.get('progress_text')
@@ -366,12 +366,12 @@ class CellRendererProgress(gtk.CellRendererProgress):
             self.set_property('text', text)
 
 
-class CellRendererCombo(gtk.CellRendererCombo):
+class CellRendererCombo(Gtk.CellRendererCombo):
     def __init__(self, cell, objectlist, choices):
-        gtk.CellRendererCombo.__init__(self)
+        Gtk.CellRendererCombo.__init__(self)
         self.cell = cell
         self.objectlist = objectlist
-        self.props.model = gtk.ListStore(object, str)
+        self.props.model = Gtk.ListStore(object, str)
         self.props.text_column = 1
         for choice in choices:
             if not isinstance(choice, tuple):

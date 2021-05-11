@@ -1,26 +1,25 @@
 """
-    pygtkhelpers.debug.dialogs
+    pyGtkhelpers.debug.dialogs
     ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     An exception handler for pygtk with nice ui
 
-    :copyright: 2009 by Ronny Pfannschmidt <Ronny.Pfannschmidt@gmx.de>
+    :copyright: 2021 by Patrick LUZOLO <eldorplus@gmail.com>
     :license: LGPL2 or later
 """
 
 import sys
 import linecache
 
-import gtk
-import gobject
+from gi.repository import GObject, Gtk
 from pyGtkhelpers.ui.objectlist import ObjectList, Column
 from pyGtkhelpers.utils import MarkupMixin
 
 
-def scrolled(widget, shadow=gtk.SHADOW_NONE):
-    window = gtk.ScrolledWindow()
+def scrolled(widget, shadow=Gtk.SHADOW_NONE):
+    window = Gtk.ScrolledWindow()
     window.set_shadow_type(shadow)
-    window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+    window.set_policy(Gtk.POLICY_AUTOMATIC, Gtk.POLICY_AUTOMATIC)
     if widget.set_scroll_adjustments(window.get_hadjustment(),
                                      window.get_vadjustment()):
         window.add(widget)
@@ -29,11 +28,11 @@ def scrolled(widget, shadow=gtk.SHADOW_NONE):
     return window
 
 
-class SimpleExceptionDialog(gtk.MessageDialog):
+class SimpleExceptionDialog(Gtk.MessageDialog):
     def __init__(self, exc, tb, parent=None, **extra):
 
-        gtk.MessageDialog.__init__(self, buttons=gtk.BUTTONS_CLOSE,
-                                   type=gtk.MESSAGE_ERROR, parent=parent)
+        Gtk.MessageDialog.__init__(self, buttons=Gtk.BUTTONS_CLOSE,
+                                   type=Gtk.MESSAGE_ERROR, parent=parent)
 
         self.extra = extra
         self.exc = exc
@@ -46,7 +45,7 @@ class SimpleExceptionDialog(gtk.MessageDialog):
 
         # XXX: add support for showing url's for pastebins
 
-        expander = gtk.Expander("Exception Details")
+        expander = Gtk.Expander("Exception Details")
         self.vbox.pack_start(expander)
         expander.add(scrolled(self.get_trace_view(exc, tb)))
 
@@ -108,7 +107,7 @@ def install_hook(dialog=SimpleExceptionDialog, invoke_old_hook=False, **extra):
     assert _old_hook is None
 
     def new_hook(etype, eval, trace):
-        gobject.idle_add(dialog_handler, dialog, etype, eval, trace, extra)
+        GObject.idle_add(dialog_handler, dialog, etype, eval, trace, extra)
         if invoke_old_hook:
             _old_hook(etype, eval, trace)
 

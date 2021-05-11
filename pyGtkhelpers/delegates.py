@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.delegates
+    pyGtkhelpers.delegates
     ~~~~~~~~~~~~~~~~~~~~~~
 
     Delegates, which combine some UI, some signals, some signal handlers, and
     some properties,
 
-    :copyright: 2009-2010 by pygtkhelpers Authors
+    :copyright: 2021 by pyGtkhelpers Authors
     :license: LGPL2 or later
 """
 
 import os
-import gi
 import pkg_resources
 
-from .utils import gsignal
 from gi.repository import GObject, Gtk
+from .utils import gsignal
 
 
 def get_first_builder_window(builder):
@@ -25,10 +24,10 @@ def get_first_builder_window(builder):
     This is mostly used for guessing purposes, and an explicit naming is
     always going to be a better situation.
     """
-    for obj in builder.get_objects():
-        if isinstance(obj, Gtk.Window):
+    for win in builder.get_objects():
+        if isinstance(win, Gtk.Window):
             # first window
-            return obj
+            return win
 
 
 class BaseDelegate(GObject.GObject):
@@ -41,7 +40,7 @@ class BaseDelegate(GObject.GObject):
     and connecting signals.
 
     Additionally, it is a GObject.GObject subclass, and so can be used with the
-    gsignal, and gproperty functions from pygtkhelpers.utils in order to add
+    gsignal, and gproperty functions from pyGtkHelpers.utils in order to add
     property and signal functionality.
 
     The abstract elements of this class are:

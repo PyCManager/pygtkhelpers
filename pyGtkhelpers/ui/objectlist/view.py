@@ -13,12 +13,11 @@
 import itertools
 import copy
 
-import gtk
-
+from gi.repository import Gtk, Gdk
 from pyGtkhelpers.utils import gsignal
 
 
-class ObjectTreeViewBase(gtk.TreeView):
+class ObjectTreeViewBase(Gtk.TreeView):
     """Abstract base class for object-based TreeView implementations
 
     :param columns: A list of Column instances
@@ -30,10 +29,10 @@ class ObjectTreeViewBase(gtk.TreeView):
     gsignal('item-activated', object)
     gsignal('item-changed', object, str, object)
     gsignal('selection-changed')
-    gsignal('item-left-clicked', object, gtk.gdk.Event)
-    gsignal('item-right-clicked', object, gtk.gdk.Event)
-    gsignal('item-middle-clicked', object, gtk.gdk.Event)
-    gsignal('item-double-clicked', object, gtk.gdk.Event)
+    gsignal('item-left-clicked', object, Gdk.Event)
+    gsignal('item-right-clicked', object, Gdk.Event)
+    gsignal('item-middle-clicked', object, Gdk.Event)
+    gsignal('item-double-clicked', object, Gdk.Event)
     gsignal('item-added', object)
     # editing-started(cellrenderer, editable, path, column)
     gsignal('editing-started', object, object, object, object)
@@ -43,12 +42,12 @@ class ObjectTreeViewBase(gtk.TreeView):
     gsignal('editing-done', object, object, object, object)
 
     def __init__(self, columns=(), **kwargs):
-        gtk.TreeView.__init__(self)
+        Gtk.TreeView.__init__(self)
         # XXX: make replacable
         self.model = self.create_model()
         self.model_base = self.model
         self.model_filter = self.model.filter_new()
-        self.model_sort = gtk.TreeModelSort(self.model_filter)
+        self.model_sort = Gtk.TreeModelSort(self.model_filter)
         self.model_tree = self.model_sort
         self.set_model(self.model_sort)
         # setup sorting
@@ -69,7 +68,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         This abstract method must be implemented for subclasses. The concrete
         model should be created and returned.
 
-        :rtype: gtk.TreeModel
+        :rtype: Gtk.TreeModel
         """
         raise NotImplementedError
 
@@ -105,7 +104,7 @@ class ObjectTreeViewBase(gtk.TreeView):
         self.columns = tuple(columns)
         for idx, col in enumerate(columns):
             view_col = col.create_treecolumn(self)
-            view_col.set_data('pygtkhelpers::objectlist', self)
+            view_col.set_data('pyGtk.helpers::objectlist', self)
             self.append_column(view_col)
             # needs to be done after adding the column
             if col.expander:
@@ -136,7 +135,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _get_selected_item(self):
         """The currently selected item"""
         selection = self.get_selection()
-        if selection.get_mode() != gtk.SELECTION_SINGLE:
+        if selection.get_mode() != Gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
         model, selected = selection.get_selected()
         if selected is not None:
@@ -144,7 +143,7 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def _set_selected_item(self, item):
         selection = self.get_selection()
-        if selection.get_mode() != gtk.SELECTION_SINGLE:
+        if selection.get_mode() != Gtk.SELECTION_SINGLE:
             raise AttributeError('selected_item not valid for select_multiple')
         if item is None:
             selection.unselect_all()
@@ -163,7 +162,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _get_selected_items(self):
         """List of currently selected items"""
         selection = self.get_selection()
-        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_items only valid for '
                                  'select_multiple')
         model, selected_paths = selection.get_selected_rows()
@@ -174,7 +173,7 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def _set_selected_items(self, new_selection):
         selection = self.get_selection()
-        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_items only valid for '
                                  'select_multiple')
         selection.unselect_all()
@@ -209,7 +208,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _get_selected_ids(self):
         """List of currently selected ids"""
         selection = self.get_selection()
-        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_ids only valid for select_multiple')
         model, selected_paths = selection.get_selected_rows()
         if selected_paths:
@@ -219,7 +218,7 @@ class ObjectTreeViewBase(gtk.TreeView):
 
     def _set_selected_ids(self, new_selection):
         selection = self.get_selection()
-        if selection.get_mode() != gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
             raise AttributeError('selected_ids only valid for select_multiple')
         selection.unselect_all()
         if new_selection is None:
@@ -319,10 +318,10 @@ class ObjectTreeViewBase(gtk.TreeView):
                           sorting
         """
         # work out the direction
-        if direction in ('+', 'asc', gtk.SORT_ASCENDING):
-            direction = gtk.SORT_ASCENDING
-        elif direction in ('-', 'desc', gtk.SORT_DESCENDING):
-            direction = gtk.SORT_DESCENDING
+        if direction in ('+', 'asc', Gtk.SORT_ASCENDING):
+            direction = Gtk.SORT_ASCENDING
+        elif direction in ('-', 'desc', Gtk.SORT_DESCENDING):
+            direction = Gtk.SORT_DESCENDING
         else:
             raise AttributeError('unrecognised direction')
         if callable(attr_or_key):
@@ -412,7 +411,7 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _viewcols_for_attr(self, attr):
         return [
             col for col in self.get_columns()
-            if col.get_data('pygtkhelpers::column').attr == attr
+            if col.get_data('pyGtk.helpers::column').attr == attr
         ]
 
     def _connect_internal(self):
@@ -427,10 +426,10 @@ class ObjectTreeViewBase(gtk.TreeView):
     def _emit_for_path(self, path, event):
         item = self._object_at_sort_path(path)
         signal_map = {
-            (1, gtk.gdk.BUTTON_PRESS): 'item-left-clicked',
-            (3, gtk.gdk.BUTTON_PRESS): 'item-right-clicked',
-            (2, gtk.gdk.BUTTON_PRESS): 'item-middle-clicked',
-            (1, gtk.gdk._2BUTTON_PRESS): 'item-double-clicked',
+            (1, Gdk.BUTTON_PRESS): 'item-left-clicked',
+            (3, Gdk.BUTTON_PRESS): 'item-right-clicked',
+            (2, Gdk.BUTTON_PRESS): 'item-middle-clicked',
+            (1, Gdk._2BUTTON_PRESS): 'item-double-clicked',
         }
         signal_name = signal_map.get((event.button, event.type))
         if signal_name is not None:
@@ -457,7 +456,7 @@ class ObjectTreeViewBase(gtk.TreeView):
                 return False
             path, column, rx, ry = item_spec
             obj = self._object_at_path(path)
-            pcol = column.get_data('pygtkhelpers::column')
+            pcol = column.get_data('pyGtk.helpers::column')
             return pcol.render_tooltip(tooltip, obj)
 
     def _on_row_activated(self, objectlist, path, column, *k):
@@ -518,7 +517,7 @@ class ObjectList(ObjectTreeViewBase):
         self.emit('item-removed', item, item_id)
 
     def create_model(self):
-        return gtk.ListStore(object)
+        return Gtk.ListStore(object)
 
     def insert(self, position, item, select=False):
         """Insert an item at the specified position in the list.
@@ -632,7 +631,7 @@ class ObjectTree(ObjectTreeViewBase):
         self.connect('row-collapsed', self._on_row_collapsed)
 
     def create_model(self):
-        return gtk.TreeStore(object)
+        return Gtk.TreeStore(object)
 
     def append(self, item, parent=None, select=False):
         """Add an item to the end of the list.

@@ -14,7 +14,7 @@ from .view import ObjectList
 
 
 class RowFields(object):
-    '''
+    """
     Expose all key/value pairs specified through kwargs as object attributes.
     This is convenient for use in combination with a pygtkhelpers ObjectList,
     since an ObjectList object uses attribute access to read/write field values.
@@ -26,7 +26,7 @@ class RowFields(object):
     'World'
     >>> row_fields.attrs
     {'foo': 'Hello', 'bar': 'World'}
-    '''
+    """
     def __init__(self, **kwargs):
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
@@ -50,7 +50,7 @@ class RowFields(object):
 
 
 class CombinedFields(ObjectList):
-    '''
+    """
     Given a dictionary mapping of form names to pygtkhelpers Form instances
     create an ObjectList where each field in a form is name-mangled to prevent
     Column attribute conflicts.
@@ -103,7 +103,7 @@ class CombinedFields(ObjectList):
      (u'_e4467fe0bd__another_int_field', u'Another int field'),
      (u'_196ff80637__my_string_field', u'My string field'),
      (u'_196ff80637__my_int_field', u'My int field')]
-    '''
+    """
     field_set_prefix = '_%s__'
 
     gsignal('fields-filter-request', object)
@@ -297,10 +297,10 @@ class CombinedFields(ObjectList):
         return True
 
     def _update_row_fields(self, form_name, row_id, attrs):
-        '''
+        """
         -get row values for (form_name, row_id)
         -set affected objectlist item attributes based on row values
-        '''
+        """
         if form_name not in self._forms or row_id >= len(self):
             return
         combined_row = self[row_id]
@@ -330,7 +330,7 @@ class CombinedFields(ObjectList):
 
 
 class CombinedRow(object):
-    '''
+    """
     This class provides storage for all field values for a particular row
     in a CombinedFields instance.  Access to the field values is provided
     through attribute access (i.e., getattr, setattr) using the CombinedFields
@@ -390,7 +390,7 @@ class CombinedRow(object):
     ...     for form_name, row_fields in combined_row.attributes.items()])) # doctest:+SKIP
     {'another_form': {'my_int_field': 1234},
      'example_form': {'my_string_field': u'foo'}}
-    '''
+    """
     field_set_prefix = '_%s__'
 
     def __init__(self, combined_fields, attributes=None):

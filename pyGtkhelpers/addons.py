@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.addons
+    pyGtkhelpers.addons
     ~~~~~~~~~~~~~~~~~~~~
 
     Extending GTK WIdgets (or any GObject) without subclassing them.

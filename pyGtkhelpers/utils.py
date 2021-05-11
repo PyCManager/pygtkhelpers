@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    pygtkhelpers.utils
+    pyGtkhelpers.utils
     ~~~~~~~~~~~~~~~~~~
 
     Utilities for handling some of the wonders of PyGTK.

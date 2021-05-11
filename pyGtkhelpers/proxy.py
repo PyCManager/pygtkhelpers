@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.proxy
+    pyGtkhelpers.proxy
     ~~~~~~~~~~~~~~~~~~
 
     Controllers for managing data display widgets.
 
-    :copyright: 2005-2008 by pygtkhelpers Authors
+    :copyright: 2005-2008 by pyGtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 
     An example session of using a proxy::
 
-        >>> import gtk
+        >>> from gi.repository import Gtk
         >>> from pyGtkhelpers.proxy import proxy_for
-        >>> widget = gtk.Entry()
+        >>> widget = Gtk.Entry()
         >>> proxy = proxy_for(widget)
         >>> proxy
         <GtkEntryProxy object at 0x9aea25c (PyGTKHelperGObjectProxy at 0x9e6ec50)>
@@ -36,18 +36,15 @@
         'banana'
 """
 
-
-import gobject
-import gtk
-
+from gi.repository import GObject, Gtk
 from pyGtkhelpers.utils import gsignal
 from pyGtkhelpers.ui.widgets import StringList, SimpleComboBox
 
 
-class GObjectProxy(gobject.GObject):
-    """A proxy for a gtk.Widget
+class GObjectProxy(GObject.GObject):
+    """A proxy for a Gtk.Widget
 
-    This proxy provides a common api to gtk widgets, so that they can be used
+    This proxy provides a common api to Gtk widgets, so that they can be used
     without knowing which specific widget they are. All proxy types should
     extend this class.
     """
@@ -58,7 +55,7 @@ class GObjectProxy(gobject.GObject):
     signal_name = None
 
     def __init__(self, widget):
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
         self.widget = widget
         self.connections = []
         self.connect_widget()
@@ -158,28 +155,28 @@ class SingleDelegatedPropertyGObjectProxy(SinglePropertyGObjectProxy):
 
 
 class GtkEntryProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.Entry.
+    """Proxy for a Gtk.Entry.
     """
     prop_name = 'text'
     signal_name = 'changed'
 
 
 class GtkToggleButtonProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.ToggleButton.
+    """Proxy for a Gtk.ToggleButton.
     """
     prop_name = 'active'
     signal_name = 'toggled'
 
 
 class GtkColorButtonProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.ColorButton
+    """Proxy for a Gtk.ColorButton
     """
     prop_name = 'color'
     signal_name = 'color-set'
 
 
 class StringListProxy(GObjectProxy):
-    """Proxy for a pygtkhelpers.ui.widgets.StringList.
+    """Proxy for a pyGtkhelpers.ui.widgets.StringList.
     """
     signal_name = 'content-changed'
 
@@ -191,7 +188,7 @@ class StringListProxy(GObjectProxy):
 
 
 class GtkRangeProxy(GObjectProxy):
-    """Base class for widgets employing a gtk.Range.
+    """Base class for widgets employing a Gtk.Range.
     """
     signal_name = 'value-changed'
 
@@ -203,7 +200,7 @@ class GtkRangeProxy(GObjectProxy):
 
 
 class GtkFileChooserProxy(GObjectProxy):
-    """Proxy for a gtk.FileChooser.
+    """Proxy for a Gtk.FileChooser.
     """
     signal_name = 'selection-changed'
 
@@ -223,14 +220,14 @@ class GtkFileChooserProxy(GObjectProxy):
 
 
 class GtkFontButtonProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.FontButton.
+    """Proxy for a Gtk.FontButton.
     """
     signal_name = 'font-set'
     prop_name = 'font-name'
 
 
 class GtkComboBoxProxy(GObjectProxy):
-    """Proxy for a gtk.ComboBox.
+    """Proxy for a Gtk.ComboBox.
     """
     signal_name = 'changed'
 
@@ -269,7 +266,7 @@ class GtkComboBoxProxy(GObjectProxy):
 
 
 class GtkTextViewProxy(SingleDelegatedPropertyGObjectProxy):
-    """Proxy for a gtk.TextView.
+    """Proxy for a Gtk.TextView.
     """
     signal_name = 'changed'
     prop_name = 'text'
@@ -277,50 +274,50 @@ class GtkTextViewProxy(SingleDelegatedPropertyGObjectProxy):
 
 
 class GtkLabelProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.Label.
+    """Proxy for a Gtk.Label.
     """
     prop_name = 'label'
 
 
 class GtkImageProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.Image.
+    """Proxy for a Gtk.Image.
     """
     prop_name = 'file'
 
 
 class GtkLinkButtonProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.LinkButton.
+    """Proxy for a Gtk.LinkButton.
     """
     prop_name = 'uri'
 
 
 class GtkProgressBarProxy(SinglePropertyGObjectProxy):
-    """Proxy for a gtk.ProgressBar.
+    """Proxy for a Gtk.ProgressBar.
     """
     prop_name = 'fraction'
 
 
 widget_proxies = {
-    gtk.Entry: GtkEntryProxy,
-    gtk.ToggleButton: GtkToggleButtonProxy,
-    gtk.CheckButton: GtkToggleButtonProxy,
-    gtk.RadioButton: GtkToggleButtonProxy,
-    gtk.CheckMenuItem: GtkToggleButtonProxy,
-    gtk.ColorButton: GtkColorButtonProxy,
-    gtk.ComboBox: GtkComboBoxProxy,
-    gtk.SpinButton: GtkRangeProxy,
-    gtk.HScale: GtkRangeProxy,
-    gtk.VScale: GtkRangeProxy,
-    gtk.VScrollbar: GtkRangeProxy,
-    gtk.HScrollbar: GtkRangeProxy,
-    gtk.FileChooserButton: GtkFileChooserProxy,
-    gtk.FileChooserWidget: GtkFileChooserProxy,
-    gtk.FontButton: GtkFontButtonProxy,
-    gtk.Label: GtkLabelProxy,
-    gtk.Image: GtkImageProxy,
-    gtk.LinkButton: GtkLinkButtonProxy,
-    gtk.ProgressBar: GtkProgressBarProxy,
-    gtk.TextView: GtkTextViewProxy,
+    Gtk.Entry: GtkEntryProxy,
+    Gtk.ToggleButton: GtkToggleButtonProxy,
+    Gtk.CheckButton: GtkToggleButtonProxy,
+    Gtk.RadioButton: GtkToggleButtonProxy,
+    Gtk.CheckMenuItem: GtkToggleButtonProxy,
+    Gtk.ColorButton: GtkColorButtonProxy,
+    Gtk.ComboBox: GtkComboBoxProxy,
+    Gtk.SpinButton: GtkRangeProxy,
+    Gtk.HScale: GtkRangeProxy,
+    Gtk.VScale: GtkRangeProxy,
+    Gtk.VScrollbar: GtkRangeProxy,
+    Gtk.HScrollbar: GtkRangeProxy,
+    Gtk.FileChooserButton: GtkFileChooserProxy,
+    Gtk.FileChooserWidget: GtkFileChooserProxy,
+    Gtk.FontButton: GtkFontButtonProxy,
+    Gtk.Label: GtkLabelProxy,
+    Gtk.Image: GtkImageProxy,
+    Gtk.LinkButton: GtkLinkButtonProxy,
+    Gtk.ProgressBar: GtkProgressBarProxy,
+    Gtk.TextView: GtkTextViewProxy,
     StringList: StringListProxy,
     SimpleComboBox: GtkComboBoxProxy,
 }
@@ -329,7 +326,7 @@ widget_proxies = {
 def proxy_for(widget):
     """Create a proxy for a Widget
 
-    :param widget: A gtk.Widget to proxy
+    :param widget: A Gtk.Widget to proxy
 
     This will raise a KeyError if there is no proxy type registered for the
     widget type.
@@ -340,7 +337,7 @@ def proxy_for(widget):
     return proxy_type(widget)
 
 
-class ProxyGroup(gobject.GObject):
+class ProxyGroup(GObject.GObject):
     """A controller to handle multiple proxies, and sub-groups
 
     A ProxyGroup is a bridge to reduce multiple proxies and sub-groups to a
@@ -350,7 +347,7 @@ class ProxyGroup(gobject.GObject):
     gsignal('changed', object, str, object)
 
     def __init__(self):
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
 
     def add_proxy(self, name, proxy):
         """Add a proxy to this group

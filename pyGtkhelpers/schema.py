@@ -5,7 +5,7 @@ import types
 from flatland import Boolean, Enum, Float, Form, Integer, String
 from flatland.validation import ValueAtLeast, ValueAtMost
 from redirect_io import nostderr
-import gtk
+from gi.repository import Gtk
 import jsonschema
 import pandas as pd
 
@@ -201,10 +201,10 @@ class SchemaDialog(FormViewDialog):
 
     def create_ui(self):
         super(SchemaDialog, self).create_ui()
-        self.label_error = gtk.Label()
-        self.label_event_box = gtk.EventBox()
+        self.label_error = Gtk.Label()
+        self.label_event_box = Gtk.EventBox()
         self.label_event_box.add(self.label_error)
-        self.vbox_errors = gtk.VBox()
+        self.vbox_errors = Gtk.VBox()
         self.vbox_errors.add(self.label_event_box)
         self.vbox_form.add(self.vbox_errors)
         self.vbox_errors.show_all()
@@ -223,19 +223,19 @@ class SchemaDialog(FormViewDialog):
                               for e in self.validator.iter_errors(data_dict)])
 
         # Light red color.
-        light_red = gtk.gdk.Color(240 / 255., 126 / 255., 110 / 255.)
+        light_red = Gtk.gdk.Color(240 / 255., 126 / 255., 110 / 255.)
 
         for name_i, field_i in self.form_view.form.fields.iteritems():
             color_i = light_red if name_i in errors else None
             label_widget_i = (field_i.widget
-                              .get_data('pygtkhelpers::label_widget'))
-            label_widget_i.get_parent().modify_bg(gtk.STATE_NORMAL, color_i)
+                              .get_data('pyGtkHelpers::label_widget'))
+            label_widget_i.get_parent().modify_bg(Gtk.STATE_NORMAL, color_i)
 
         if errors:
             self.button_ok.set_sensitive(False)
             message = '\n'.join(['[{}] {}'.format(name, error.message)
                                  for name, error in errors.iteritems()])
-            self.label_event_box.modify_bg(gtk.STATE_NORMAL, light_red)
+            self.label_event_box.modify_bg(Gtk.STATE_NORMAL, light_red)
             self.label_error.set_markup(message)
             self.vbox_errors.show()
         else:
@@ -257,16 +257,16 @@ class MetaDataDialog(SchemaDialog):
         self.scanner = BarcodeScanner(pipeline_command)
 
     def create_ui(self):
-        from barcode_scanner.gtk_matplotlib import ScannerView
+        from barcode_scanner.Gtk_matplotlib import ScannerView
 
         super(MetaDataDialog, self).create_ui()
         self.scanner_view = ScannerView(self.scanner)
         self.scanner_view.widget.show_all()
 
-        self.scanner_window = gtk.Dialog(title='Barcode scan',
+        self.scanner_window = Gtk.Dialog(title='Barcode scan',
                                          parent=self.window,
-                                         flags=gtk.DIALOG_MODAL |
-                                         gtk.DIALOG_DESTROY_WITH_PARENT)
+                                         flags=Gtk.DIALOG_MODAL |
+                                         Gtk.DIALOG_DESTROY_WITH_PARENT)
         (self.scanner_window.get_content_area()
          .pack_start(self.scanner_view.widget))
         self.scanner.start()
@@ -303,7 +303,7 @@ class MetaDataDialog(SchemaDialog):
 
             # Close scan dialog after a short delay (let user see the
             # scanned match).
-            gtk.timeout_add(1000, lambda *args:
+            Gtk.timeout_add(1000, lambda *args:
                             self.scanner_window.hide())
             return True
 
@@ -324,9 +324,9 @@ class MetaDataDialog(SchemaDialog):
             self.scanner_window.disconnect(row_i['callback_ids']
                                            ['scanner_window'])
             del row_i['callback_ids']['scanner_window']
-            return gtk.TRUE
+            return Gtk.TRUE
 
-        # From list of `gtk.Table` widget children, extract list of `(widget,
+        # From list of `Gtk.Table` widget children, extract list of `(widget,
         # event_box)` pairs, one pair per form field.
         # N.B., table widgets are listed in reverse order of insertion in list
         # of children, so list of pairs is reversed (i.e., `[::-1]`).
@@ -339,7 +339,7 @@ class MetaDataDialog(SchemaDialog):
             label_i = event_box_i.get_children()[0]
 
             # Add scan button beside each widget.
-            button_scan_i = gtk.Button('Scan')
+            button_scan_i = Gtk.Button('Scan')
             button_scan_i.show()
             table.attach(button_scan_i, 2, 3, i, i + 1)
             button_scan_i.props.name = label_i.get_label()
@@ -435,7 +435,7 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
         with nostderr():
             import pygst_utils as pu
 
-        gtk.threads_init()
+        Gtk.threads_init()
         df_modes = pu.get_available_video_source_configs()
         query = (df_modes.width == df_modes.width)
         if device_name is not None:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.forms
+    pyGtkhelpers.forms
     ~~~~~~~~~~~~~~~~~~
 
     Providing specialized delegates that can be used to map and validate
@@ -10,14 +10,14 @@
 
     .. _Flatland: http://discorporate.us/projects/flatland/
 
-    :copyright: 2005-2008 by pygtkhelpers Authors
+    :copyright: 2005-2008 by pyGtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 from collections import OrderedDict
 import sys
-import gtk
 
 from flatland import String, Integer, Boolean
+from gi.repository import GObject, Gtk
 
 from .delegates import SlaveView
 from .proxy import proxy_for, ProxyGroup
@@ -52,10 +52,10 @@ class Field(object):
         self.element = element
         self.widget = widget
         self.proxy = proxy_for(widget)
-        self.label_event_box = gtk.EventBox()
-        self.label_widget = gtk.Label()
+        self.label_event_box = Gtk.EventBox()
+        self.label_widget = Gtk.Label()
         self.label_event_box.add(self.label_widget)
-        self.widget.set_data('pygtkhelpers::label_widget', self.label_widget)
+        self.widget.set_data('pyGtkhelpers::label_widget', self.label_widget)
 
     def set_label(self, text):
         self.label_widget.set_text(text)
@@ -69,9 +69,9 @@ class Field(object):
         self._unparent()
         self.label_widget.set_alignment(1.0, 0.5)
         table.attach(self.label_event_box, 0, 1, row, row+1,
-                     xoptions=gtk.SHRINK | gtk.FILL, yoptions=gtk.SHRINK)
+                     xoptions=Gtk.SHRINK | Gtk.FILL, yoptions=Gtk.SHRINK)
         table.attach(self.widget, 1, 2, row, row+1,
-                     xoptions=gtk.EXPAND | gtk.FILL, yoptions=gtk.SHRINK)
+                     xoptions=Gtk.EXPAND | Gtk.FILL, yoptions=Gtk.SHRINK)
 
 
 # XXX AA: Needs splitting into view component, and controller component
@@ -101,7 +101,7 @@ class FieldSet(object):
 
     def layout_as_table(self):
         # XXX: turn to utility function
-        table = gtk.Table(len(self.fields), 2)
+        table = Gtk.Table(len(self.fields), 2)
         table.set_row_spacings(6)
         table.set_col_spacings(6)
         table.set_border_width(6)
@@ -160,8 +160,8 @@ class BooleanBuilder(ElementBuilder):
     default_style = 'check'
 
     styles = {
-        'check': gtk.CheckButton,
-        'toggle': gtk.ToggleButton
+        'check': Gtk.CheckButton,
+        'toggle': Gtk.ToggleButton
     }
 
     def build(self, widget, style, element, options):
@@ -173,9 +173,9 @@ class BooleanBuilder(ElementBuilder):
 
     def _on_toggle_toggled(self, toggle):
         if toggle.get_active():
-            toggle.set_label(gtk.STOCK_YES)
+            toggle.set_label(Gtk.STOCK_YES)
         else:
-            toggle.set_label(gtk.STOCK_NO)
+            toggle.set_label(Gtk.STOCK_NO)
 
 
 class StringBuilder(ElementBuilder):
@@ -183,8 +183,8 @@ class StringBuilder(ElementBuilder):
     default_style = 'uniline'
 
     styles = {
-        'uniline': gtk.Entry,
-        'multiline': gtk.TextView,
+        'uniline': Gtk.Entry,
+        'multiline': Gtk.TextView,
     }
 
     def build(self, widget, style, element, options):
@@ -198,8 +198,8 @@ class IntegerBuilder(ElementBuilder):
     default_style = 'spin'
 
     styles = {
-        'spin': gtk.SpinButton,
-        'slider': gtk.HScale,
+        'spin': Gtk.SpinButton,
+        'slider': Gtk.HScale,
     }
 
     def build(self, widget, style, element, options):
