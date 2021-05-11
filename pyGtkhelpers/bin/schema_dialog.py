@@ -4,7 +4,7 @@ import logging
 import re
 import sys
 
-from pygtkhelpers.schema import schema_dialog
+from pyGtkhelpers.schema import schema_dialog
 import gtk
 
 

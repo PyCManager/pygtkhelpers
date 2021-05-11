@@ -13,8 +13,8 @@ import linecache
 
 import gtk
 import gobject
-from pygtkhelpers.ui.objectlist import ObjectList, Column
-from pygtkhelpers.utils import MarkupMixin
+from pyGtkhelpers.ui.objectlist import ObjectList, Column
+from pyGtkhelpers.utils import MarkupMixin
 
 
 def scrolled(widget, shadow=gtk.SHADOW_NONE):

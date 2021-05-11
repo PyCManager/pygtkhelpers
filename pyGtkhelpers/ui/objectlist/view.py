@@ -15,7 +15,7 @@ import copy
 
 import gtk
 
-from pygtkhelpers.utils import gsignal
+from pyGtkhelpers.utils import gsignal
 
 
 class ObjectTreeViewBase(gtk.TreeView):

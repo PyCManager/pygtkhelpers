@@ -22,7 +22,7 @@ class CheckCalled(object):
     in order to block the UI adequately to check::
 
         >>> import gtk
-        >>> from pygtkhelpers.utils import refresh_gui
+        >>> from pyGtkhelpers.utils import refresh_gui
         >>> b = gtk.Button()
         >>> check = CheckCalled(b, 'clicked')
         >>> b.clicked()

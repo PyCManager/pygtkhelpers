@@ -1,6 +1,6 @@
 import gtk
-from pygtkhelpers.utils import refresh_gui
-from pygtkhelpers.test import CheckCalled
+from pyGtkhelpers.utils import refresh_gui
+from pyGtkhelpers.test import CheckCalled
 
 def test_edit_name(items, user):
     items.append(user)

@@ -19,7 +19,7 @@ class Skip(Exception):
 
 
 def expand_items(form_values, sep='.'):
-    '''
+    """
     Parameters
     ----------
     form_values : list
@@ -33,7 +33,7 @@ def expand_items(form_values, sep='.'):
     dict
         Nested dictionary, where levels are inferred from each key by splitting
         on ``'.'``.
-    '''
+    """
     output = {}
     for keys_str_i, value_i in form_values:
         keys_i = keys_str_i.split(sep)
@@ -55,7 +55,7 @@ def fields_frame_to_flatland_form_class(df_fields, sep='.'):
 
 
 def flatten_dict(root, parents=None, sep='.'):
-    '''
+    """
     Args:
 
         root (dict) : Nested dictionary (e.g., JSON object).
@@ -70,7 +70,7 @@ def flatten_dict(root, parents=None, sep='.'):
         joined key would be ``'a.b.c'``.
 
     See also :func:`expand_items`.
-    '''
+    """
     if parents is None:
         parents = []
 
@@ -94,12 +94,12 @@ def flatten_form(form_instance):
 
 
 def get_fields_frame(schema):
-    '''
+    """
     Parameters
     ----------
     schema : dict
         `JSON schema <http://spacetelescope.github.io/understanding-json-schema/>`_
-    '''
+    """
     fields = []
 
     def get_field_record(i, key, value, parents):
@@ -296,7 +296,7 @@ class MetaDataDialog(SchemaDialog):
             else:
                 # Make system bell sound to indicate a scan has
                 # completed.
-                print '\a\a',
+                print('\a\a',)
 
             # Re-enable the scan button.
             row_i['button'].set_sensitive(True)
@@ -309,10 +309,10 @@ class MetaDataDialog(SchemaDialog):
 
         # Attach callback for when scan dialog is closed.
         def on_scanner_view__delete_event(window, event, row_i):
-            '''
+            """
             When scanner view is closed, stop the scan, hide the window and
             re-enable the button that initiated the scan.
-            '''
+            """
             # Disable scanner to reduce CPU usage and prevent unexpected
             # `symbols-found` signals.  Note that GStreamer video pipeline
             # stays running.
@@ -331,7 +331,7 @@ class MetaDataDialog(SchemaDialog):
         # N.B., table widgets are listed in reverse order of insertion in list
         # of children, so list of pairs is reversed (i.e., `[::-1]`).
         widget_pairs = [children[2 * i:2 * i + 2]
-                        for i in xrange(len(self.form_view.form.schema))][::-1]
+                        for i in range(len(self.form_view.form.schema))][::-1]
 
         for i, (name_i, form_field_i) in enumerate(self.form_view.form.schema
                                                    .iteritems()):
@@ -397,7 +397,7 @@ class MetaDataDialog(SchemaDialog):
 
 def schema_dialog(schema, data=None, device_name=None, max_width=None,
                   max_fps=None, **kwargs):
-    '''
+    """
     Parameters
     ----------
     schema : dict
@@ -426,7 +426,7 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
         parameters.
     ValueError
         If values to not validate.
-    '''
+    """
     # TODO Remove pygst code (or at least gracefully handle case where it is
     # not available).
     if not device_name and device_name is not None:

@@ -1,7 +1,7 @@
 
 import gtk
 
-from pygtkhelpers.addons import GObjectPlugin, apply_addons, apply_addon
+from pyGtkhelpers.addons import GObjectPlugin, apply_addons, apply_addon
 
 
 class OkButtonPlugin(GObjectPlugin):

@@ -1,7 +1,7 @@
 from itertools import repeat
-from pygtkhelpers.utils import refresh_gui
-from pygtkhelpers.gthreads import AsyncTask, GeneratorTask
-from pygtkhelpers.gthreads import gcall, invoke_in_mainloop
+from pyGtkhelpers.utils import refresh_gui
+from pyGtkhelpers.gthreads import AsyncTask, GeneratorTask
+from pyGtkhelpers.gthreads import gcall, invoke_in_mainloop
 
 def test_async_task():
 

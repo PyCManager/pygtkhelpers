@@ -1,4 +1,4 @@
-from pygtkhelpers.ui.objectlist import ObjectList, ObjectTree, Column
+from pyGtkhelpers.ui.objectlist import ObjectList, ObjectTree, Column
 
 class User(object):
     def __init__(self, name, age):

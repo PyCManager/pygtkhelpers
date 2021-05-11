@@ -1,5 +1,5 @@
 import gtk
-from pygtkhelpers.ui.objectlist import Column, ObjectList
+from pyGtkhelpers.ui.objectlist import Column, ObjectList
 
 
 

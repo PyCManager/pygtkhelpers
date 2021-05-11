@@ -1,6 +1,6 @@
 
 import gtk
-from pygtkhelpers.ui.objectlist import Column
+from pyGtkhelpers.ui.objectlist import Column
 
 class MockTooltip(object):
     def set_text(self, text):

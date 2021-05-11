@@ -13,8 +13,8 @@
 import gtk
 from pango import STYLE_ITALIC
 
-from pygtkhelpers.utils import gsignal
-from pygtkhelpers.addons import GObjectPlugin
+from pyGtkhelpers.utils import gsignal
+from pyGtkhelpers.addons import GObjectPlugin
 
 
 class StringList(gtk.VBox):
@@ -141,8 +141,8 @@ class AttrSortCombo(gtk.HBox):
     def __init__(self, objectlist, attribute_list, default):
         gtk.HBox.__init__(self, spacing=3)
         self.set_border_width(3)
-        from pygtkhelpers.ui.widgets import SimpleComboBox
-        from pygtkhelpers.proxy import GtkComboBoxProxy
+        from pyGtkhelpers.ui.widgets import SimpleComboBox
+        from pyGtkhelpers.proxy import GtkComboBoxProxy
 
         self._objectlist = objectlist
 

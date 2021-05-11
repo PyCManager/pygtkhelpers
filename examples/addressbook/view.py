@@ -1,6 +1,6 @@
 import gtk
-from pygtkhelpers.delegates import SlaveView
-from pygtkhelpers.utils import run_in_window
+from pyGtkhelpers.delegates import SlaveView
+from pyGtkhelpers.utils import run_in_window
 
 from listing import PersonList
 from form import PersonForm

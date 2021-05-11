@@ -1,7 +1,7 @@
 from mock import Mock
 
 import gtk
-from pygtkhelpers.ui.objectlist import Cell, Column
+from pyGtkhelpers.ui.objectlist import Cell, Column
 
 def test_make_cells():
     col = Column(title='Test', cells=[

@@ -203,7 +203,7 @@ class GObjectUserDataProxy(object):
     :param widget: The widget for which to provide attribute access
 
     >>> import gtk
-    >>> from pygtkhelpers.utils import GObjectUserDataProxy
+    >>> from pyGtkhelpers.utils import GObjectUserDataProxy
     >>> w = gtk.Label()
     >>> data = GObjectUserDataProxy(w)
     >>> data.foo = 123

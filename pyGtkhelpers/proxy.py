@@ -12,7 +12,7 @@
     An example session of using a proxy::
 
         >>> import gtk
-        >>> from pygtkhelpers.proxy import proxy_for
+        >>> from pyGtkhelpers.proxy import proxy_for
         >>> widget = gtk.Entry()
         >>> proxy = proxy_for(widget)
         >>> proxy
@@ -40,8 +40,8 @@
 import gobject
 import gtk
 
-from pygtkhelpers.utils import gsignal
-from pygtkhelpers.ui.widgets import StringList, SimpleComboBox
+from pyGtkhelpers.utils import gsignal
+from pyGtkhelpers.ui.widgets import StringList, SimpleComboBox
 
 
 class GObjectProxy(gobject.GObject):

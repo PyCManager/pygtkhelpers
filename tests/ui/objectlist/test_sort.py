@@ -1,9 +1,9 @@
 
 import py
 import gtk, gtk.gdk
-from pygtkhelpers.ui.objectlist import ObjectList, Column
-from pygtkhelpers.utils import refresh_gui
-from pygtkhelpers.test import CheckCalled
+from pyGtkhelpers.ui.objectlist import ObjectList, Column
+from pyGtkhelpers.utils import refresh_gui
+from pyGtkhelpers.test import CheckCalled
 from mock import Mock
 
 def test_sort_by_attr_default(items):

@@ -12,36 +12,35 @@
 """
 
 import os
-import pkgutil
-
-import gobject
-import gtk
+import gi
+import pkg_resources
 
 from .utils import gsignal
+from gi.repository import GObject, Gtk
 
 
 def get_first_builder_window(builder):
-    """Get the first toplevel widget in a gtk.Builder hierarchy.
+    """Get the first toplevel widget in a Gtk.Builder hierarchy.
 
     This is mostly used for guessing purposes, and an explicit naming is
     always going to be a better situation.
     """
     for obj in builder.get_objects():
-        if isinstance(obj, gtk.Window):
+        if isinstance(obj, Gtk.Window):
             # first window
             return obj
 
 
-class BaseDelegate(gobject.GObject):
+class BaseDelegate(GObject.GObject):
     """Base delegate functionality.
 
     This is abstract.
 
-    It uses hand-created, and gtk.Builder created ui's, and combinations of the
+    It uses hand-created, and Gtk.Builder created ui's, and combinations of the
     two, and is responsible for automatically loading ui files from resources,
     and connecting signals.
 
-    Additionally, it is a gobject.GObject subclass, and so can be used with the
+    Additionally, it is a GObject.GObject subclass, and so can be used with the
     gsignal, and gproperty functions from pygtkhelpers.utils in order to add
     property and signal functionality.
 
@@ -72,23 +71,26 @@ class BaseDelegate(gobject.GObject):
     gsignal('model-updated', object, object)
 
     def __init__(self, model=None):
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
         self._props = {}
         self._toplevel = None
         self.slaves = []
+        self.widget = None
+        self._model = model
+        self._ui_ready = False
+
+    def prepare_ui(self):
         self._load_builder()
         if self._toplevel is None:
             self._toplevel = self.create_default_toplevel()
         self.widget = self._toplevel
-        self._model = model
         self.create_ui()
         self._connect_signals()
-        # re-set the model to emit the signal XXX: potentially confusing
-        self.model = self.model
+        self._ui_ready = True
 
     # Public API
     def get_builder_toplevel(self, builder):
-        """Get the toplevel widget from a gtk.Builder file.
+        """Get the toplevel widget from a Gtk.Builder file.
         """
         raise NotImplementedError
 
@@ -101,7 +103,7 @@ class BaseDelegate(gobject.GObject):
         Override to create additional UI here.
 
         This can contain any instance initialization, so for example mutation of
-        the gtk.Builder generated UI, or creating the UI in its entirety.
+        the Gtk.Builder generated UI, or creating the UI in its entirety.
         """
 
     def model_set(self):
@@ -121,6 +123,8 @@ class BaseDelegate(gobject.GObject):
 
     def show(self):
         """Call show_all on the toplevel widget"""
+        if not self._ui_ready:
+            self.prepare_ui()
         self.widget.show_all()
 
     def hide(self):
@@ -130,15 +134,15 @@ class BaseDelegate(gobject.GObject):
     def show_and_run(self):
         """Show the main widget and run the gtk loop"""
         self.show()
-        gtk.main()
+        Gtk.main()
 
     def hide_and_quit(self):
         """Hide the widget and quit the main loop"""
         self.hide()
-        gtk.main_quit()
+        Gtk.main_quit()
 
     def _load_builder(self):
-        builder = gtk.Builder()
+        builder = Gtk.Builder()
         self._builder = builder
         if self.builder_path:
             if not os.path.exists(self.builder_path):
@@ -147,11 +151,13 @@ class BaseDelegate(gobject.GObject):
         elif self.builder_file:
             # XXX: more sensible selection!!
             data = None
-            for type in self.__class__.__mro__:
+            for type_ in self.__class__.__mro__:
                 for pattern in self.builder_file_patterns:
-                    file = pattern % self.builder_file
+                    file_ = pattern % self.builder_file
                     try:
-                        data = pkgutil.get_data(type.__module__, file)
+                        data = pkg_resources.resource_filename(type_
+                                                               .__module__,
+                                                               file_)
                         break
                     except (IOError, ImportError):
                         continue
@@ -166,11 +172,7 @@ class BaseDelegate(gobject.GObject):
         self._toplevel = self.get_builder_toplevel(builder)
         for obj in builder.get_objects():
             try:
-                # Need to use `gtk.Buildable.get_name` instead of `get_name`
-                # method directly due to [bug][1].
-                #
-                # [1]: http://mailman.daa.com.au/cgi-bin/pipermail/pygtk/2010-December/019255.html
-                obj_name = gtk.Buildable.get_name(obj)
+                obj_name = Gtk.Buildable.get_name(obj)
             except TypeError:
                 pass  # XXX: maybe warn?
             else:
@@ -199,8 +201,9 @@ class BaseDelegate(gobject.GObject):
 
     def _get_all_handlers(self):
         for name in dir(self):
-            if all([name.startswith('on_') or name.startswith('after_'),
-                    '__' in name]):
+            if ((name.startswith('on_') or
+                 name.startswith('after_')) and
+                    '__' in name):
                 yield name
 
     def _get_prop_handler(self, propname, action):
@@ -236,7 +239,7 @@ class SlaveView(BaseDelegate):
     """A View that is a slave"""
 
     def get_builder_toplevel(self, builder):
-        """Get the toplevel widget from a gtk.Builder file.
+        """Get the toplevel widget from a Gtk.Builder file.
 
         The slave view implementation first searches for the widget named as
         self.toplevel_name (which defaults to "main". If this is missing, the
@@ -253,13 +256,16 @@ class SlaveView(BaseDelegate):
         return toplevel
 
     def create_default_toplevel(self):
-        return gtk.VBox()
+        return Gtk.VBox()
 
     def show_and_run(self):
         """Show the main widget in a window and run the gtk loop"""
-        self.display_widget = gtk.Window()
+        if not self._ui_ready:
+            self.prepare_ui()
+        self.display_widget = Gtk.Window()
         self.display_widget.add(self.widget)
         self.display_widget.show()
+        self.display_widget.connect('destroy', lambda *args: self.hide_and_quit())
         BaseDelegate.show_and_run(self)
 
 
@@ -267,22 +273,22 @@ class ToplevelView(BaseDelegate):
     """A View that is a toplevel widget"""
 
     def get_builder_toplevel(self, builder):
-        """Get the toplevel widget from a gtk.Builder file.
+        """Get the toplevel widget from a Gtk.Builder file.
 
         The main view implementation first searches for the widget named as
         self.toplevel_name (which defaults to "main". If this is missing, or not
-        a gtk.Window, the first toplevel window found in the gtk.Builder is
+        a Gtk.Window, the first toplevel window found in the Gtk.Builder is
         used.
         """
         toplevel = builder.get_object(self.toplevel_name)
-        if not gobject.type_is_a(toplevel, gtk.Window):
+        if not GObject.type_is_a(toplevel, Gtk.Window):
             toplevel = None
         if toplevel is None:
             toplevel = get_first_builder_window(builder)
         return toplevel
 
     def create_default_toplevel(self):
-        return gtk.Window()
+        return Gtk.Window()
 
 
 class WindowView(ToplevelView):

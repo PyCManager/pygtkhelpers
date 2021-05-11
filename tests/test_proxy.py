@@ -2,8 +2,8 @@
 import os
 import py
 import gtk
-from pygtkhelpers.proxy import widget_proxies, StringList, SimpleComboBox
-from pygtkhelpers.utils import refresh_gui
+from pyGtkhelpers.proxy import widget_proxies, StringList, SimpleComboBox
+from pyGtkhelpers.utils import refresh_gui
 
 def pytest_generate_tests(metafunc):
     for widget, proxy in widget_proxies.items():

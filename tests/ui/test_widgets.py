@@ -1,10 +1,10 @@
 from py.test import importorskip
 import gtk
-from pygtkhelpers.utils import refresh_gui
-from pygtkhelpers.ui.widgets import StringList, AttrSortCombo, \
+from pyGtkhelpers.utils import refresh_gui
+from pyGtkhelpers.ui.widgets import StringList, AttrSortCombo, \
     EmptyTextViewFiller
-from pygtkhelpers.addons import apply_addon
-from pygtkhelpers.ui.objectlist import ObjectList
+from pyGtkhelpers.addons import apply_addon
+from pyGtkhelpers.ui.objectlist import ObjectList
 
 def pytest_funcarg__pl(request):
     return StringList()

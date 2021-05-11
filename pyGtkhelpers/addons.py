@@ -11,7 +11,7 @@
 
 """
 
-from pygtkhelpers.utils import GObjectUserDataProxy
+from pyGtkhelpers.utils import GObjectUserDataProxy
 
 
 def apply_addons(widget, *addon_types, **named_addon_types):

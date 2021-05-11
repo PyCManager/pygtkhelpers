@@ -2,7 +2,7 @@
 """Reusable Components, Delegate Example 3
 """
 import gtk
-from pygtkhelpers.delegates import WindowView, SlaveView
+from pyGtkhelpers.delegates import WindowView, SlaveView
 
 class UserView(SlaveView):
     """A view for a single user"""
