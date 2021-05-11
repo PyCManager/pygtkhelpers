@@ -2,11 +2,11 @@
 from py.test import raises as assert_raises
 import gobject, gtk
 
-from pyGtkhelpers.utils import gsignal, gproperty, \
+from pyGtkHelpers.utils import gsignal, gproperty, \
         GObjectUserDataProxy, \
         eformat, MarkupMixin, XFormatter
 
-from pyGtkhelpers.delegates import BaseDelegate
+from pyGtkHelpers.delegates import BaseDelegate
 
 def test_gsignal():
 

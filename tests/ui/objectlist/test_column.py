@@ -1,6 +1,6 @@
 import gtk
-from pyGtkhelpers.utils import refresh_gui
-from pyGtkhelpers.ui.objectlist import Column
+from pyGtkHelpers.utils import refresh_gui
+from pyGtkHelpers.ui.objectlist import Column
 
 def test_column_title():
     col = Column("name")

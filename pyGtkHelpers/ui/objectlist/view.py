@@ -14,7 +14,7 @@ import itertools
 import copy
 
 from gi.repository import Gtk, Gdk
-from pyGtkhelpers.utils import gsignal
+from pyGtkHelpers.utils import gsignal
 
 
 class ObjectTreeViewBase(Gtk.TreeView):

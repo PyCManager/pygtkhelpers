@@ -4,8 +4,8 @@ import logging
 import re
 import sys
 
-from pyGtkhelpers.schema import schema_dialog
-import Gtk
+from pyGtkHelpers.schema import schema_dialog
+from gi.repository import Gtk
 
 
 def parse_args(args=None):

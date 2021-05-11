@@ -2,9 +2,9 @@
 from py.test import raises
 import gtk, gobject
 
-from pyGtkhelpers.delegates import SlaveView, ToplevelView, BaseDelegate, \
+from pyGtkHelpers.delegates import SlaveView, ToplevelView, BaseDelegate, \
     WindowView
-from pyGtkhelpers.utils import refresh_gui, gproperty
+from pyGtkHelpers.utils import refresh_gui, gproperty
 
 class _Delegate1(BaseDelegate):
     pass

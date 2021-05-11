@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 """
-    pyGtkhelpers.addons
+    pyGtkHelpers.addons
     ~~~~~~~~~~~~~~~~~~~~
 
     Extending GTK WIdgets (or any GObject) without subclassing them.
 
-    :copyright: 2010 by pygtkhelpers Authors
+    :copyright: 2010 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 
 """
 
-from pyGtkhelpers.utils import GObjectUserDataProxy
+from pyGtkHelpers.utils import GObjectUserDataProxy
 
 
 def apply_addons(widget, *addon_types, **named_addon_types):

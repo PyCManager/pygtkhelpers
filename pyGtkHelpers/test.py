@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 """
-    pygtkhelpers.test
+    pyGtkHelpers.test
     ~~~~~~~~~~~~~~~~~
 
     Assistance for unittesting pygtk
 
-    :copyright: 2005-2008 by pygtkhelpers Authors
+    :copyright: 2021 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
@@ -21,8 +21,8 @@ class CheckCalled(object):
     It could be used in conjuntion with :func:`pygtkhelpers.utils.refresh_gui`
     in order to block the UI adequately to check::
 
-        >>> import gtk
-        >>> from pyGtkhelpers.utils import refresh_gui
+        >>> from gi.repository import Gtk
+        >>> from pyGtkHelpers.utils import refresh_gui
         >>> b = gtk.Button()
         >>> check = CheckCalled(b, 'clicked')
         >>> b.clicked()

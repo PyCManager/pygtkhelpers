@@ -2,8 +2,8 @@
 """Reusable Components, Delegate Example 6
 """
 import gtk
-from pyGtkhelpers.utils import gsignal
-from pyGtkhelpers.delegates import WindowView, SlaveView
+from pyGtkHelpers.utils import gsignal
+from pyGtkHelpers.delegates import WindowView, SlaveView
 
 
 class LoginView(SlaveView):

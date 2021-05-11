@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-    pyGtkhelpers.utils
+    pyGtkHelpers.utils
     ~~~~~~~~~~~~~~~~~~
 
     Utilities for handling some of the wonders of PyGTK.
-
     gproperty and gsignal are mostly taken from kiwi.utils
 
-    :copyright: 2005-2008 by pygtkhelpers Authors
+    :copyright: 2021 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
@@ -16,9 +15,7 @@ import struct
 import sys
 import time
 
-import gobject
-import gtk
-
+from gi.repository import GObject, Gtk
 from cgi import escape as _xml_escape
 
 
@@ -35,13 +32,13 @@ def gsignal(name, *args, **kwargs):
 
     .. note:: flags: A combination of;
 
-      - gobject.SIGNAL_RUN_FIRST
-      - gobject.SIGNAL_RUN_LAST
-      - gobject.SIGNAL_RUN_CLEANUP
-      - gobject.SIGNAL_NO_RECURSE
-      - gobject.SIGNAL_DETAILED
-      - gobject.SIGNAL_ACTION
-      - gobject.SIGNAL_NO_HOOKS
+      - GObject.SIGNAL_RUN_FIRST
+      - GObject.SIGNAL_RUN_LAST
+      - GObject.SIGNAL_RUN_CLEANUP
+      - GObject.SIGNAL_NO_RECURSE
+      - GObject.SIGNAL_DETAILED
+      - GObject.SIGNAL_ACTION
+      - GObject.SIGNAL_NO_HOOKS
 
     """
 
@@ -51,24 +48,24 @@ def gsignal(name, *args, **kwargs):
     finally:
         del frame
 
-    dict = locals.setdefault('__gsignals__', {})
+    dict_ = locals.setdefault('__gsignals__', {})
 
     if args and args[0] == 'override':
-        dict[name] = 'override'
+        dict_[name] = 'override'
     else:
         retval = kwargs.get('retval', None)
         if retval is None:
-            default_flags = gobject.SIGNAL_RUN_FIRST
+            default_flags = GObject.SIGNAL_RUN_FIRST
         else:
-            default_flags = gobject.SIGNAL_RUN_LAST
+            default_flags = GObject.SIGNAL_RUN_LAST
 
         flags = kwargs.get('flags', default_flags)
-        if retval is not None and flags != gobject.SIGNAL_RUN_LAST:
+        if retval is not None and flags != GObject.SIGNAL_RUN_LAST:
             raise TypeError(
                 "You cannot use a return value without setting flags to "
-                "gobject.SIGNAL_RUN_LAST")
+                "GObject.SIGNAL_RUN_LAST")
 
-        dict[name] = (flags, retval, args)
+        dict_[name] = (flags, retval, args)
 
 
 def _max(c):
@@ -83,7 +80,7 @@ _DEFAULT_VALUES = {str: '', float: 0.0, int: 0, long: 0L}
 
 
 def gproperty(name, ptype, default=None, nick='', blurb='',
-              flags=gobject.PARAM_READWRITE, **kwargs):
+              flags=GObject.PARAM_READWRITE, **kwargs):
     """Add a GObject property to the current object.
 
     :param name:   name of property
@@ -128,7 +125,7 @@ def gproperty(name, ptype, default=None, nick='', blurb='',
         if default is not True and default is not False:
             raise TypeError("default must be True or False, not %r" % default)
         default = default,
-    elif gobject.type_is_a(ptype, gobject.GEnum):
+    elif GObject.type_is_a(ptype, GObject.GEnum):
         if default is None:
             raise TypeError("enum properties needs a default value")
         elif not isinstance(default, ptype):
@@ -150,11 +147,11 @@ def gproperty(name, ptype, default=None, nick='', blurb='',
     frame = sys._getframe(1)
     try:
         locals = frame.f_locals
-        dict = locals.setdefault('__gproperties__', {})
+        dict_ = locals.setdefault('__gproperties__', {})
     finally:
         del frame
 
-    dict[name] = (ptype, nick, blurb) + default + (flags,)
+    dict_[name] = (ptype, nick, blurb) + default + (flags,)
 
 
 def refresh_gui(delay=0.0001, wait=0.0001):
@@ -168,24 +165,24 @@ def refresh_gui(delay=0.0001, wait=0.0001):
     is required to take place.
     """
     time.sleep(delay)
-    while gtk.events_pending():
-        gtk.main_iteration_do(block=False)
+    while Gtk.events_pending():
+        Gtk.main_iteration_do(block=False)
         time.sleep(wait)
 
 
 def _get_in_window(widget):
     from .delegates import BaseDelegate
-    if isinstance(widget, gtk.Window):
+    if isinstance(widget, Gtk.Window):
         return widget
     elif isinstance(widget, BaseDelegate):
         return _get_in_window(widget.widget)
     else:
-        w = gtk.Window()
+        w = Gtk.Window()
         w.add(widget)
         return w
 
 
-def run_in_window(target, on_destroy=gtk.main_quit):
+def run_in_window(target, on_destroy=Gtk.main_quit):
     """Run a widget, or a delegate in a Window
     """
     w = _get_in_window(target)
@@ -194,7 +191,7 @@ def run_in_window(target, on_destroy=gtk.main_quit):
     w.resize(500, 400)
     w.move(100, 100)
     w.show_all()
-    gtk.main()
+    Gtk.main()
 
 
 class GObjectUserDataProxy(object):
@@ -202,9 +199,9 @@ class GObjectUserDataProxy(object):
 
     :param widget: The widget for which to provide attribute access
 
-    >>> import gtk
-    >>> from pyGtkhelpers.utils import GObjectUserDataProxy
-    >>> w = gtk.Label()
+    >>> from gi.repository import Gtk
+    >>> from pyGtkHelpers.utils import GObjectUserDataProxy
+    >>> w = Gtk.Label()
     >>> data = GObjectUserDataProxy(w)
     >>> data.foo = 123
     >>> data.foo
@@ -284,10 +281,10 @@ class MarkupMixin(object):
         return formatter.vformat(self.format, (), self.markup_kwargs())
 
 
-def dict_to_form(dict):
-    '''
+def dict_to_form(dict_):
+    """
     Generate a flatland form based on a pandas Series.
-    '''
+    """
     from flatland import Boolean, Form, String, Integer, Float
 
     def is_float(v):
@@ -306,7 +303,7 @@ def dict_to_form(dict):
         return v in (True, False)
 
     schema_entries = []
-    for k, v in dict.iteritems():
+    for k, v in dict_.iteritems():
         if is_int(v):
             schema_entries.append(Integer.named(k).using(default=v,
                                                          optional=True))

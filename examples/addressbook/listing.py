@@ -1,7 +1,7 @@
 import gtk
-from pyGtkhelpers.delegates import SlaveView
-from pyGtkhelpers.ui.objectlist import ObjectList, Column
-from pyGtkhelpers.utils import run_in_window, gsignal
+from pyGtkHelpers.delegates import SlaveView
+from pyGtkHelpers.ui.objectlist import ObjectList, Column
+from pyGtkHelpers.utils import run_in_window, gsignal
 
 from person import Person, from_json, to_json
 

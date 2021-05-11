@@ -55,7 +55,7 @@ class Field(object):
         self.label_event_box = Gtk.EventBox()
         self.label_widget = Gtk.Label()
         self.label_event_box.add(self.label_widget)
-        self.widget.set_data('pyGtkhelpers::label_widget', self.label_widget)
+        self.widget.set_data('pyGtkHelpers::label_widget', self.label_widget)
 
     def set_label(self, text):
         self.label_widget.set_text(text)

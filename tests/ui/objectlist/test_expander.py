@@ -1,6 +1,6 @@
 import py
-from pyGtkhelpers.utils import refresh_gui
-from pyGtkhelpers.test import CheckCalled
+from pyGtkHelpers.utils import refresh_gui
+from pyGtkHelpers.test import CheckCalled
 
 @py.test.mark.tree_only
 def test_tree_expander_column(items):

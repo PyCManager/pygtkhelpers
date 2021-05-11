@@ -1,9 +1,9 @@
 import py
 import gtk
-from pyGtkhelpers.utils import refresh_gui
+from pyGtkHelpers.utils import refresh_gui
 from .conftest import User
 
-from pyGtkhelpers.test import CheckCalled
+from pyGtkHelpers.test import CheckCalled
 
 def test_append(items, user):
     assert len(items) == 0

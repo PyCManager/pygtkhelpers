@@ -12,8 +12,8 @@ import sys
 import linecache
 
 from gi.repository import GObject, Gtk
-from pyGtkhelpers.ui.objectlist import ObjectList, Column
-from pyGtkhelpers.utils import MarkupMixin
+from pyGtkHelpers.ui.objectlist import ObjectList, Column
+from pyGtkHelpers.utils import MarkupMixin
 
 
 def scrolled(widget, shadow=Gtk.SHADOW_NONE):

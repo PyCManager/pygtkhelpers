@@ -1,13 +1,13 @@
 
 
-from pyGtkhelpers.utils import refresh_gui
-from pyGtkhelpers.test import CheckCalled
+from pyGtkHelpers.utils import refresh_gui
+from pyGtkHelpers.test import CheckCalled
 
 
 
 import gtk
 
-from pyGtkhelpers.forms import FormView, Field
+from pyGtkHelpers.forms import FormView, Field
 
 from flatland import Dict, String, Integer, Boolean
 

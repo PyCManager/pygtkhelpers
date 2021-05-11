@@ -63,7 +63,7 @@ def _destroy(win):
     # XXX: util?
     win.destroy()
     if not Gtk.main_level():
-        from pyGtkhelpers.utils import refresh_gui
+        from pyGtkHelpers.utils import refresh_gui
         refresh_gui()
 
 

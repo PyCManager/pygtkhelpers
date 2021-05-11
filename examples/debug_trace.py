@@ -1,6 +1,6 @@
 import gtk
 
-from pyGtkhelpers.debug import install_hook
+from pyGtkHelpers.debug import install_hook
 
 
 def _test2(*a):

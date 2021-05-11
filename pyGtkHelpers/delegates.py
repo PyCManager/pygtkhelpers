@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 """
-    pyGtkhelpers.delegates
+    pyGtkHelpers.delegates
     ~~~~~~~~~~~~~~~~~~~~~~
 
     Delegates, which combine some UI, some signals, some signal handlers, and
     some properties,
 
-    :copyright: 2021 by pyGtkhelpers Authors
+    :copyright: 2021 by pyGtkHelpers Authors
     :license: LGPL2 or later
 """
 

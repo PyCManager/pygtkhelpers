@@ -1,6 +1,6 @@
 import glib
-from pyGtkhelpers.ui.dialogs import info, error, open, select_folder
-from pyGtkhelpers.utils import refresh_gui
+from pyGtkHelpers.ui.dialogs import info, error, open, select_folder
+from pyGtkHelpers.utils import refresh_gui
 import gtk
 import py
 

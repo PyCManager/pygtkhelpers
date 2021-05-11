@@ -2,7 +2,7 @@
 from flatland import Form, Dict, String, Integer, Boolean
 from flatland.validation import ValueAtLeast, ValueAtMost
 
-from pyGtkhelpers.forms import FormView
+from pyGtkHelpers.forms import FormView
 
 
 class PersonSchema(Form):

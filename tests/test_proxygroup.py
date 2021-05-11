@@ -1,9 +1,9 @@
 
 import gtk
 
-from pyGtkhelpers.test import CheckCalled
-from pyGtkhelpers.utils import refresh_gui
-from pyGtkhelpers.proxy import ProxyGroup, GtkEntryProxy
+from pyGtkHelpers.test import CheckCalled
+from pyGtkHelpers.utils import refresh_gui
+from pyGtkHelpers.proxy import ProxyGroup, GtkEntryProxy
 
 def test_add_proxy():
     m = ProxyGroup()

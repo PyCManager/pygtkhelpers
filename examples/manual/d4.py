@@ -2,7 +2,7 @@
 """Reusable Components, Delegate Example 4
 """
 import gtk
-from pyGtkhelpers.delegates import WindowView
+from pyGtkHelpers.delegates import WindowView
 
 class ApplicationView(WindowView):
     """The main interface for my user management program"""

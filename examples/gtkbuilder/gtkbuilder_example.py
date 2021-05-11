@@ -4,8 +4,8 @@ import sys, os
 
 import gtk, gobject
 
-from pyGtkhelpers.delegates import SlaveView, WindowView
-from pyGtkhelpers.utils import run_in_window, gsignal
+from pyGtkHelpers.delegates import SlaveView, WindowView
+from pyGtkHelpers.utils import run_in_window, gsignal
 
 
 class MenuView(SlaveView):

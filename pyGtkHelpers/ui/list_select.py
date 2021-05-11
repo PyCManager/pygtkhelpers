@@ -1,7 +1,7 @@
 import gtk
-from pyGtkhelpers.delegates import WindowView, SlaveView
-from pyGtkhelpers.ui.objectlist import ObjectList, Column
-from pyGtkhelpers.utils import gsignal
+from pyGtkHelpers.delegates import WindowView, SlaveView
+from pyGtkHelpers.ui.objectlist import ObjectList, Column
+from pyGtkHelpers.utils import gsignal
 
 from .dict_as_attr_proxy import DictAsAttrProxy
 

@@ -1,5 +1,5 @@
 import gtk
-from pyGtkhelpers.utils import refresh_gui
+from pyGtkHelpers.utils import refresh_gui
 from .conftest import User
 
 def pytest_funcarg__searchcheck(request):

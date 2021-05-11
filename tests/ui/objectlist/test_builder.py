@@ -1,5 +1,5 @@
 import gtk
-from pyGtkhelpers.ui.objectlist import ObjectList
+from pyGtkHelpers.ui.objectlist import ObjectList
 
 def test_build_simple():
     uidef = '''
