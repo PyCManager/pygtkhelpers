@@ -55,7 +55,7 @@ else:
     try:
         import gi
     except ImportError:
-        print(('Please install Python bindings for Gtk 3 using your systems package manager.'), file=sys.stderr)
+        print(('Please install Python bindings for Gtk3 using your systems package manager.'), file=sys.stderr)
 
 
 setup(name='wheeler.pyGtkHelpers',
