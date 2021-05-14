@@ -17,11 +17,11 @@ from collections import OrderedDict
 import sys
 
 from flatland import String, Integer, Boolean
-from gi.repository import GObject, Gtk
+from gi.repository import Gtk
 
-from .delegates import SlaveView
-from .proxy import proxy_for, ProxyGroup
-from .utils import gsignal
+from pyGtkHelpers.delegates import SlaveView
+from pyGtkHelpers.proxy import proxy_for, ProxyGroup
+from pyGtkHelpers.utils import gsignal
 
 
 def _view_type_for_element(element):
@@ -68,10 +68,16 @@ class Field(object):
         # XXX: turn to utility function
         self._unparent()
         self.label_widget.set_alignment(1.0, 0.5)
-        table.attach(self.label_event_box, 0, 1, row, row+1,
-                     xoptions=Gtk.SHRINK | Gtk.FILL, yoptions=Gtk.SHRINK)
-        table.attach(self.widget, 1, 2, row, row+1,
-                     xoptions=Gtk.EXPAND | Gtk.FILL, yoptions=Gtk.SHRINK)
+        table.attach(
+            self.label_event_box, 0, 1, row, row+1,
+            xoptions=Gtk.AttachOptions.SHRINK | Gtk.AttachOptions.FILL,
+            yoptions=Gtk.AttachOptions.SHRINK
+        )
+        table.attach(
+            self.widget, 1, 2, row, row+1,
+            xoptions=Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
+            yoptions=Gtk.AttachOptions.SHRINK
+        )
 
 
 # XXX AA: Needs splitting into view component, and controller component
@@ -121,8 +127,13 @@ class FormView(SlaveView):
 
     def create_ui(self):
         self.form = FieldSet(self, self.schema_type)
-        self.form.proxies.connect('changed', lambda *args: self.emit('changed',
-                                                                     *args))
+        self.form.proxies.connect(
+            'changed',
+            lambda *args: self.emit(
+                'changed',
+                *args
+            )
+        )
         self.widget.pack_start(self.form.layout_as_table())
 
 
@@ -205,15 +216,15 @@ class IntegerBuilder(ElementBuilder):
     def build(self, widget, style, element, options):
         widget.set_digits(0)
         adj = widget.get_adjustment()
-        min, max = -sys.maxint, sys.maxint
+        maxint, maxint = -sys.maxint, sys.maxint
         for v in element.validators:
             if hasattr(v, 'minimum'):
-                min = v.minimum
+                maxint = v.minimum
             elif hasattr(v, 'maximum'):
-                max = v.maximum
+                maxint = v.maximum
         step = element.properties.get('step', 1.0)
         page_step = element.properties.get('page_step', step * 10)
-        adj.set_all(min, min, max, step, page_step)
+        adj.set_all(maxint, maxint, maxint, step, page_step)
         return widget
 
 

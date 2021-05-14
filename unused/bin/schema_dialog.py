@@ -4,7 +4,7 @@ import logging
 import re
 import sys
 
-from pyGtkHelpers.schema import schema_dialog
+from unused.schema import schema_dialog
 from gi.repository import Gtk
 
 
@@ -35,7 +35,7 @@ def parse_args(args=None):
 
 
 def main(args=None):
-    Gtk.threads_init()
+    Gtk.init()
     args = parse_args(args)
 
     schema = json.loads(args.schema)

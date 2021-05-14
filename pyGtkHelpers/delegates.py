@@ -15,7 +15,7 @@ import os
 import pkg_resources
 
 from gi.repository import GObject, Gtk
-from .utils import gsignal
+from pyGtkHelpers.utils import gsignal
 
 
 def get_first_builder_window(builder):

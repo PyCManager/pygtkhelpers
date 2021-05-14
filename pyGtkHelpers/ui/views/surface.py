@@ -1,19 +1,35 @@
-import gtk
+# -*- coding: utf-8 -*-
+
+"""
+    pyGtkHelpers.view.surface
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Layer Controllers
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
 import pandas as pd
 
-from ...utils import gsignal
-from ...delegates import SlaveView
-from ..objectlist import (get_list_store, add_columns,
-                          on_edited_dataframe_sync, set_column_format)
+from gi.repository import GLib, Gtk
+from pyGtkHelpers.utils import gsignal
+from pyGtkHelpers.delegates import SlaveView
+from pyGtkHelpers.ui.objectlist import (
+    get_list_store,
+    add_columns,
+    on_edited_dataframe_sync,
+    set_column_format
+)
 
 
 class LayerAlphaController(SlaveView):
-    '''
+    """
     .. versionchanged:: 0.21
         Specify :attr:`builder_file` instead of :attr:`builder_path` to support
         loading ``.glade`` file from ``.zip`` files (e.g., in app packaged with
         Py2Exe).
-    '''
+    """
     # Emit signal when layer alpha has changed (layer name, alpha).
     gsignal('alpha-changed', str, float)
     # Emit signal when order of layers has changed (list of reordered row
@@ -41,7 +57,7 @@ class LayerAlphaController(SlaveView):
         #
         # *N.B.*, Without doing this, sometimes the previously selected row is
         # still returned by `get_selected()`/`get_selected_rows()`.
-        gtk.idle_add(self.set_scale_alpha_from_selection)
+        GLib.idle_add(self.set_scale_alpha_from_selection)
 
     def on_adjustment_alpha__value_changed(self, adjustment):
         #  1. Look up selected layer.
@@ -64,7 +80,7 @@ class LayerAlphaController(SlaveView):
         self.set_alpha_for_selection(0.)
 
     def set_surfaces(self, df_surfaces):
-        '''
+        """
         Reset the contents of the tree view to show one row per surface, with
         a column containing the alpha multiplier for the corresponding surface
         (in the range [0, 1]), indexed by surface name.
@@ -76,7 +92,7 @@ class LayerAlphaController(SlaveView):
             | layer1 | 1.00   |
             | layer2 | 0.65   |
             | ...    | ...    |
-        '''
+        """
         for column in self.treeview_layers.get_columns():
             self.treeview_layers.remove_column(column)
 
@@ -96,7 +112,7 @@ class LayerAlphaController(SlaveView):
         self._inserted_row_path = None
 
         # Adjustment for alpha multiplier for each surface.
-        adjustment = gtk.Adjustment(1, 0, 1, .01, .1, 0)
+        adjustment = Gtk.Adjustment(1, 0, 1, .01, .1, 0)
         column = [c for c in self.treeview_layers.get_columns()
                   if c.get_name() == 'alpha'][0]
         cell_renderer = column.get_cells()[0]
@@ -133,9 +149,9 @@ class LayerAlphaController(SlaveView):
         self.emit('layers-reordered', rows_index)
 
     def set_scale_alpha_from_selection(self):
-        '''
+        """
         Set scale marker to alpha for selected layer.
-        '''
+        """
         #  1. Look up selected layer.
         selection = self.treeview_layers.get_selection()
         list_store, selected_iter = selection.get_selected()
@@ -152,9 +168,9 @@ class LayerAlphaController(SlaveView):
             self.scale_alpha.set_sensitive(True)
 
     def set_alpha_for_selection(self, alpha):
-        '''
+        """
         Set alpha for selected layer.
-        '''
+        """
         #  1. Look up selected layer.
         selection = self.treeview_layers.get_selection()
         list_store, selected_iter = selection.get_selected()

@@ -157,7 +157,7 @@ class BarcodeScanner(GObject.GObject):
         if self.pipeline is not None:
             self.stop()
 
-        pipeline = Gst.parse_launch(unicode(pipeline_command).encode('utf-8'))
+        pipeline = Gst.parse_launch(str(pipeline_command).encode('utf-8'))
         self.pipeline = pipeline
         app = pipeline.get_by_name('app-video')
         self.reset()

@@ -11,17 +11,16 @@
 import sys
 import linecache
 
-from gi.repository import GObject, Gtk
+from gi.repository import GLib, Gtk
 from pyGtkHelpers.ui.objectlist import ObjectList, Column
 from pyGtkHelpers.utils import MarkupMixin
 
 
-def scrolled(widget, shadow=Gtk.SHADOW_NONE):
+def scrolled(widget, shadow=Gtk.ShadowType.NONE):
     window = Gtk.ScrolledWindow()
     window.set_shadow_type(shadow)
-    window.set_policy(Gtk.POLICY_AUTOMATIC, Gtk.POLICY_AUTOMATIC)
-    if widget.set_scroll_adjustments(window.get_hadjustment(),
-                                     window.get_vadjustment()):
+    window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+    if widget.set_scroll_adjustments(window.get_hadjustment(), window.get_vadjustment()):
         window.add(widget)
     else:
         window.add_with_viewport(widget)
@@ -31,8 +30,12 @@ def scrolled(widget, shadow=Gtk.SHADOW_NONE):
 class SimpleExceptionDialog(Gtk.MessageDialog):
     def __init__(self, exc, tb, parent=None, **extra):
 
-        Gtk.MessageDialog.__init__(self, buttons=Gtk.BUTTONS_CLOSE,
-                                   type=Gtk.MESSAGE_ERROR, parent=parent)
+        Gtk.MessageDialog.__init__(
+            self,
+            buttons=Gtk.ButtonsType.CLOSE,
+            type=Gtk.MessageType.ERROR,
+            parent=parent
+        )
 
         self.extra = extra
         self.exc = exc
@@ -45,7 +48,7 @@ class SimpleExceptionDialog(Gtk.MessageDialog):
 
         # XXX: add support for showing url's for pastebins
 
-        expander = Gtk.Expander("Exception Details")
+        expander = Gtk.Expander(label="Exception Details")
         self.vbox.pack_start(expander)
         expander.add(scrolled(self.get_trace_view(exc, tb)))
 
@@ -107,7 +110,7 @@ def install_hook(dialog=SimpleExceptionDialog, invoke_old_hook=False, **extra):
     assert _old_hook is None
 
     def new_hook(etype, eval, trace):
-        GObject.idle_add(dialog_handler, dialog, etype, eval, trace, extra)
+        GLib.idle_add(dialog_handler, dialog, etype, eval, trace, extra)
         if invoke_old_hook:
             _old_hook(etype, eval, trace)
 

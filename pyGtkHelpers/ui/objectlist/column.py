@@ -5,11 +5,11 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-    :copyright: 2005-2008 by pyGtkhelpers Authors
+    :copyright: 2021 by pyGtkhelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-from gi.repository import GObject, Gtk, GdkPixbuf
+from gi.repository import Gtk, GdkPixbuf
 from pyGtkHelpers.utils import cmp
 
 
@@ -84,8 +84,13 @@ class Cell(object):
             self.mappers.append(CellMapper(self.mapped))
         if self.attr:
             default_prop = self._calculate_default_prop()
-            self.mappers.append(PropertyMapper(default_prop, attr=self.attr,
-                                               format_func=self.format_data))
+            self.mappers.append(
+                PropertyMapper(
+                    default_prop,
+                    attr=self.attr,
+                    format_func=self.format_data
+                )
+            )
 
     def render(self, obj, cell):
         for mapper in self.mappers:
@@ -117,7 +122,7 @@ class Cell(object):
             cell = CellRendererCombo(self, object_list, self.choices)
         else:
             cell = CellRendererText(self, object_list)
-        cell.set_data('pyGtkHelpers::cell', self)
+        # cell.set_data('pyGtkHelpers::cell', self)
         for prop, value in self.cell_props.items():
             cell.set_property(prop, value)
         return cell
@@ -174,6 +179,7 @@ class Column(object):
     :param tooltip_image_size: The size of an image tooltip
 
     """
+
     # XXX: handle cells properly
 
     def __init__(self, attr=None, type=str, title=None, **kwargs):
@@ -205,21 +211,21 @@ class Column(object):
         """Create a Gtk.TreeViewColumn for the configuration.
         """
         col = Gtk.TreeViewColumn(self.title)
-        col.set_data('pyGtkHelpers::objectlist', object_list)
-        col.set_data('pyGtkHelpers::column', self)
+        # col.set_data('PyGTKHelpersObjectList', object_list)
+        # col.set_data('PyGTKHelpers::column', self)
         col.props.visible = self.visible
         if self.expand is not None:
             col.props.expand = self.expand
         if self.resizable is not None:
             col.props.resizable = self.resizable
         if self.width is not None:
-            col.set_sizing(Gtk.TREE_VIEW_COLUMN_FIXED)
+            col.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
             col.set_fixed_width(self.width)
         for cell in self.cells:
             view_cell = cell.create_renderer(self, object_list)
-            view_cell.set_data('pyGtkHelpers::column', self)
+            # view_cell.set_data('pyGtkHelpers::column', self)
             # XXX: better control over packing
-            col.pack_start(view_cell)
+            col.pack_start(view_cell, expand=False)
             col.set_cell_data_func(view_cell, cell.cell_data_func)
         col.set_reorderable(True)
         col.set_sort_indicator(False)

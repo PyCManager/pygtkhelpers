@@ -1,16 +1,29 @@
 # -*- coding: utf-8 -*-
-import logging
 
-from cairo_helpers.surface import flatten_surfaces
-from cairo_helpers.font import aspect_fit_font_size
-from debounce import Debounce
-from svg_model import svg_polygons_to_df
-from svg_model.shapes_canvas import ShapesCanvas
+"""
+    pyGtkHelpers.view.shapes_canvas_view
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Layer Controllers
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
+import logging
 import cairo
-import gtk
 import pandas as pd
 
-from .cairo_view import GtkCairoView
+from pyGtkHelpers.ui.views.surfaces import (
+    flatten_surfaces,
+    aspect_fit_font_size
+)
+from debounce import Debounce
+from pyGtkHelpers.ui.models.svg import svg_polygons_to_df
+from svg_model.shapes_canvas import ShapesCanvas
+from gi.repository import GLib, Gtk, Gdk
+from pyGtkHelpers.ui.views.cairo_view import GtkCairoView
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +54,7 @@ class GtkShapesCanvasView(GtkCairoView):
         return cls(df_shapes, 'path_id', **kwargs)
 
     def create_ui(self):
-        '''
+        """
         .. versionchanged:: 0.20
             Debounce window expose and resize handlers to improve
             responsiveness.
@@ -51,15 +64,17 @@ class GtkShapesCanvasView(GtkCairoView):
             UI update more responsive when, e.g., changing window focus.
 
             Decrease debounce time to 250 ms.
-        '''
+        """
         super(GtkShapesCanvasView, self).create_ui()
-        self.widget.set_events(gtk.gdk.BUTTON_PRESS |
-                               gtk.gdk.BUTTON_RELEASE |
-                               gtk.gdk.BUTTON_MOTION_MASK |
-                               gtk.gdk.BUTTON_PRESS_MASK |
-                               gtk.gdk.BUTTON_RELEASE_MASK |
-                               gtk.gdk.POINTER_MOTION_HINT_MASK)
-        self._dirty_check_timeout_id = gtk.timeout_add(30, self.check_dirty)
+        self.widget.set_events(
+            Gdk.EventType.BUTTON_PRESS |
+            Gdk.EventType.BUTTON_RELEASE |
+            Gdk.EventMask.BUTTON_MOTION_MASK |
+            Gdk.EventMask.BUTTON_PRESS_MASK |
+            Gdk.EventMask.BUTTON_RELEASE_MASK |
+            Gdk.EventType.POINTER_MOTION_HINT_MASK
+        )
+        self._dirty_check_timeout_id = GLib.timeout_add(30, self.check_dirty)
 
         self.resize = Debounce(self._resize, wait=250)
         debounced_on_expose_event = Debounce(self._on_expose_event, wait=250,
@@ -91,10 +106,10 @@ class GtkShapesCanvasView(GtkCairoView):
         self.cairo_surface = flatten_surfaces(self.df_surfaces)
 
     def check_dirty(self):
-        '''
+        """
         .. versionchanged:: 0.20
             Do not log size change.
-        '''
+        """
         if self._dirty_size is None:
             if self._dirty_render:
                 self.render()
@@ -111,30 +126,30 @@ class GtkShapesCanvasView(GtkCairoView):
         return True
 
     def on_widget__configure_event(self, widget, event):
-        '''
+        """
         Called when size of drawing area changes.
-        '''
+        """
         if event.x < 0 and event.y < 0:
             # Widget has not been allocated a size yet, so do nothing.
             return
         self.resize(event.width, event.height)
 
     def _resize(self, width, height):
-        '''
+        """
         .. versionadded:: 0.20
 
         Clear canvas, draw frame off screen, and mark dirty.
 
         ..notes::
             This method is debounced to improve responsiveness.
-        '''
+        """
         self._dirty_size = width, height
         self.reset_canvas(width, height)
         self.draw()
         self._dirty_draw = True
 
     def _on_expose_event(self, widget, event):
-        '''
+        """
         .. versionchanged:: 0.20
             Renamed from ``on_widget__expose_event`` to allow wrapping for
             debouncing to improve responsiveness.
@@ -143,7 +158,7 @@ class GtkShapesCanvasView(GtkCairoView):
         of drawing area is uncovered after being covered up by another window.
 
         Clear canvas, draw frame off screen, and mark dirty.
-        '''
+        """
         logger.info('on_widget__expose_event')
 
         # Request immediate paint of pre-rendered off-screen Cairo surface to
@@ -166,9 +181,9 @@ class GtkShapesCanvasView(GtkCairoView):
         if df_shapes is None:
             df_shapes = self.canvas.df_canvas_shapes
 
-        for path_id, df_path_i in (df_shapes
-                                   .groupby(self.canvas
-                                            .shape_i_columns)[['x', 'y']]):
+        for path_id, df_path_i in (
+                df_shapes.groupby(self.canvas.shape_i_columns)[['x', 'y']]
+        ):
             cairo_context.move_to(*df_path_i.iloc[0][['x', 'y']])
             for i, (x, y) in df_path_i[['x', 'y']].iloc[1:].iterrows():
                 cairo_context.line_to(x, y)
@@ -178,7 +193,7 @@ class GtkShapesCanvasView(GtkCairoView):
         return surface
 
     def render_label(self, cairo_context, shape_id, text=None, label_scale=.9):
-        '''
+        """
         Draw label on specified shape.
 
         Parameters
@@ -193,7 +208,7 @@ class GtkShapesCanvasView(GtkCairoView):
         label_scale : float, optional
             Fraction of limiting dimension of shape bounding box to scale text
             to.
-        '''
+        """
         text = shape_id if text is None else text
         shape = self.canvas.df_bounding_shapes.ix[shape_id]
         shape_center = self.canvas.df_shape_centers.ix[shape_id]
@@ -233,28 +248,23 @@ class GtkShapesCanvasView(GtkCairoView):
         return surface
 
 
-def parse_args(args=None):
+def parse_args():
     """Parses arguments, returns (options, args)."""
-    import sys
     from argparse import ArgumentParser
-    from path_helpers import path
-
-    if args is None:
-        args = sys.argv
+    from pathlib import Path
 
     parser = ArgumentParser(description='Example app for drawing shapes from '
-                            'dataframe, scaled to fit to GTK canvas while '
-                            'preserving aspect ratio (a.k.a., aspect fit).')
-    parser.add_argument('svg_filepath', type=path, default=None)
+                                        'dataframe, scaled to fit to GTK canvas while '
+                                        'preserving aspect ratio (a.k.a., aspect fit).')
+    parser.add_argument('svg_filepath', type=Path, default=None)
     parser.add_argument('-p', '--padding-fraction', type=float, default=0)
 
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_args()
     view = GtkShapesCanvasView.from_svg(args.svg_filepath,
                                         padding_fraction=args.padding_fraction)
-    view.widget.connect('destroy', gtk.main_quit)
+    view.widget.connect('destroy', Gtk.main_quit)
     view.show_and_run()

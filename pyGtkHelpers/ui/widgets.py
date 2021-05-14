@@ -10,9 +10,8 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
-from gi.repository import Pango, Gtk
+from gi.repository import Gtk
 from pyGtkHelpers.utils import gsignal, cmp
-from pyGtkHelpers.addons import GObjectPlugin
 
 
 class StringList(Gtk.Box):
@@ -31,11 +30,11 @@ class StringList(Gtk.Box):
         self.view.set_headers_visible(False)
         self.view.set_model(self.store)
         # XXX: scrollable?
-        self.pack_start(self.view, expand=True)
+        self.pack_start(self.view, expand=True, fill=True, padding=0)
 
         self.tv_col = Gtk.TreeViewColumn()
         self.text_renderer = Gtk.CellRendererText()
-        self.tv_col.pack_start(self.text_renderer)
+        self.tv_col.pack_start(self.text_renderer, expand=False)
         self.tv_col.add_attribute(self.text_renderer, 'text', 0)
 
         self.view.append_column(self.tv_col)
@@ -43,25 +42,25 @@ class StringList(Gtk.Box):
         selection = self.view.get_selection()
         selection.connect('changed', self._on_selection_changed)
 
-        hb = Gtk.HButtonBox()
+        hb = Gtk.ButtonBox(orientation=Gtk.Orientation.HORIZONTAL)
         self.value_entry = Gtk.Entry()
         self.value_entry.connect('changed', self._on_value_changed)
         self.value_entry.set_sensitive(False)
-        self.pack_start(self.value_entry, expand=False)
-        self.add_button = Gtk.Button(stock=Gtk.STOCK_NEW)
+        self.pack_start(self.value_entry, expand=False, fill=False, padding=0)
+        self.add_button = Gtk.Button.new_from_stock(Gtk.STOCK_NEW)
         self.add_button.connect('clicked', self._on_add)
-        hb.pack_start(self.add_button, expand=False)
-        self.rem_button = Gtk.Button(stock=Gtk.STOCK_REMOVE)
+        hb.pack_start(self.add_button, expand=False, fill=False, padding=0)
+        self.rem_button = Gtk.Button.new_from_stock(Gtk.STOCK_REMOVE)
         self.rem_button.connect('clicked', self._on_rem)
         self.rem_button.set_sensitive(False)
-        hb.pack_start(self.rem_button, expand=False)
-        self.pack_start(hb, expand=False)
+        hb.pack_start(self.rem_button, expand=False, fill=False, padding=0)
+        self.pack_start(hb, expand=False, fill=False, padding=0)
         self._current = None
         self._block = False
 
     def _on_add(self, button):
-        iter = self.store.append(["New Item"])
-        self.view.get_selection().select_iter(iter)
+        itr = self.store.append(["New Item"])
+        self.view.get_selection().select_iter(itr)
         self._emit_changed()
 
     def _on_rem(self, button):
@@ -72,13 +71,13 @@ class StringList(Gtk.Box):
         self._emit_changed()
 
     def _on_selection_changed(self, selection):
-        model, iter = selection.get_selected()
+        model, itr = selection.get_selected()
 
-        self.rem_button.set_sensitive(iter is not None)
-        self._current = iter
-        if iter is not None:
+        self.rem_button.set_sensitive(itr is not None)
+        self._current = itr
+        if itr is not None:
             self.value_entry.set_sensitive(True)
-            self.value_entry.set_text(model[iter][0])
+            self.value_entry.set_text(model[itr][0])
         else:
             self.value_entry.set_sensitive(False)
             self.value_entry.set_text('')
@@ -126,9 +125,9 @@ class SimpleComboBox(Gtk.ComboBox):
     def set_choices(self, choices, default):
         self.store.clear()
         for item in choices:
-            iter = self.store.append((item[1], item[0]))
+            itr = self.store.append((item[1], item[0]))
             if item[0] == default:
-                self.set_active_iter(iter)
+                self.set_active_iter(itr)
 
 
 class AttrSortCombo(Gtk.Box):
@@ -149,21 +148,21 @@ class AttrSortCombo(Gtk.Box):
         self._proxy.connect_widget()
         self._proxy.connect('changed', self._on_configuration_changed)
         self._order_button = Gtk.ToggleToolButton(
-            stock_id=Gtk.STOCK_SORT_DESCENDING)
+            icon_name=Gtk.STOCK_SORT_DESCENDING)
         self._order_button.connect('toggled', self._on_configuration_changed)
-        self._label = Gtk.Label('Sort')
-        self.pack_start(self._label, expand=False)
-        self.pack_start(self._combo)
-        self.pack_start(self._order_button, expand=False)
+        self._label = Gtk.Label(label='Sort')
+        self.pack_start(self._label, expand=False, fill=False, padding=0)
+        self.pack_start(self._combo, expand=False, fill=False, padding=0)
+        self.pack_start(self._order_button, expand=False, fill=False, padding=0)
         self._on_configuration_changed()
         self.show_all()
 
     def _on_configuration_changed(self, *k):
         order_descending = self._order_button.get_active()
         if order_descending:
-            order = Gtk.SORT_DESCENDING
+            order = Gtk.SortType.DESCENDING
         else:
-            order = Gtk.SORT_ASCENDING
+            order = Gtk.SortType.ASCENDING
         attribute = self._proxy.read()
 
         try:
@@ -180,50 +179,3 @@ def _attr_sort_func(model, iter1, iter2, attribute):
     attr1 = getattr(model[iter1][0], attribute, None)
     attr2 = getattr(model[iter2][0], attribute, None)
     return cmp(attr1, attr2)
-
-
-class EmptyTextViewFiller(GObjectPlugin):
-    """Fill empty text views with some default text
-
-    This does it's stuff on focus-in and focus-out, because that feels most
-    natural.
-
-    :param empty_text: The text to use.
-
-    TODO:
-        Allow options for text formatting to be passed
-    """
-
-    addon_name = 'empty_filler'
-
-    def configure(self, empty_text='Enter text'):
-        self.empty_text = empty_text
-        self.buffer = self.widget.get_buffer()
-        self.empty = not len(self.buffer.props.text)
-        self.buffer.create_tag('empty-text', foreground='#666',
-                               style=Pango.STYLE_ITALIC)
-        self.widget.connect('focus-in-event', self._on_view_focus_in)
-        self.widget.connect('focus-out-event', self._on_view_focus_out)
-        if self.empty:
-            self.set_empty_text()
-
-    def _on_view_focus_in(self, view, event):
-        if self.empty:
-            self.set_empty()
-
-    def _on_view_focus_out(self, view, event):
-        self.empty = not len(self.buffer.props.text)
-        if self.empty:
-            self.set_empty_text()
-
-    def set_empty(self):
-        """Display a bank text view
-        """
-        self.buffer.props.text = ''
-
-    def set_empty_text(self):
-        """Display the empty text
-        """
-        self.buffer.insert_with_tags_by_name(
-            self.buffer.get_start_iter(),
-            self.empty_text, 'empty-text')

@@ -11,18 +11,17 @@
         in order to get well-behaved threading, run :function:`initial_setup`
         as early as possible (befor doing any gui operations
 
-    :copyright: 2005-2010 by pyGtkHelpers Authors
+    :copyright: 2021 by pyGtkHelpers Authors
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 from __future__ import with_statement
 import functools
 import threading
-import thread
-import Queue as queue
+import queue
 import sys
 import warnings
 
-from gi.repository import GObject, Gtk, Gdk
+from gi.repository import GLib, Gdk
 
 
 def initial_setup():
@@ -38,11 +37,10 @@ def initial_setup():
         GTK code blocks.
 
         See `What are the general tips for using threads with PyGTK?
-        <http://faq.pygtk.org/index.py?req=show&file=faq20.001.htp>`_.
+        <https://pygobject.readthedocs.io/en/latest/guide/threading.html>`_.
     """
     warnings.warn('Use ', DeprecationWarning)
     Gdk.threads_init()
-    GObject.threads_init()  # the glib mainloop doesn't love us else
 
 
 class AsyncTask(object):
@@ -71,7 +69,7 @@ class AsyncTask(object):
     should stick code that affects the UI.
     """
     def __init__(self, work_callback=None, loop_callback=None, daemon=True):
-        GObject.threads_init()  # the glib mainloop doesn't love us else
+        Gdk.threads_init()  # the glib mainloop doesn't love us else
         self.counter = 0
         self.daemon = daemon
 
@@ -92,7 +90,7 @@ class AsyncTask(object):
                 target=self._work_callback,
                 args=args, kwargs=kwargs
                 )
-        thread.setDaemon(self.daemon)
+        thread.daemon = self.daemon
         thread.start()
 
     def work_callback(self):
@@ -104,7 +102,7 @@ class AsyncTask(object):
     def _work_callback(self, counter, *args, **kwargs):
         ret = self.work_callback(*args, **kwargs)
         # tuple necessary cause idle_add wont allow more args
-        GObject.idle_add(self._loop_callback, (counter, ret))
+        GLib.idle_add(self._loop_callback, (counter, ret))
 
     def _loop_callback(self, vargs):
         counter, ret = vargs
@@ -115,7 +113,7 @@ class AsyncTask(object):
             ret = ()
         if not isinstance(ret, tuple):
             ret = (ret,)
-        with Gdk.lock:
+        with threading.Lock():
             self.loop_callback(*ret)
 
 
@@ -148,7 +146,7 @@ class GeneratorTask(AsyncTask):
         Gtk.main()
     """
     def __init__(self, work_callback, loop_callback, complete_callback=None,
-                 priority=GObject.PRIORITY_DEFAULT_IDLE,
+                 priority=GLib.PRIORITY_DEFAULT_IDLE,
                  pass_generator=False):
         AsyncTask.__init__(self, work_callback, loop_callback)
         self.priority = priority
@@ -162,15 +160,14 @@ class GeneratorTask(AsyncTask):
             kwargs['generator_task'] = self
         for ret in self.work_callback(*args, **kwargs):
             # XXX: what about checking self.counter?
-            if self._stopped:
-                thread.exit()
-            GObject.idle_add(self._loop_callback, (counter, ret),
-                             priority=self.priority)
+            #if self._stopped: #TODO
+                # thread.exit()
+            GLib.idle_add(self._loop_callback, (counter, ret), priority=self.priority)
         if self._complete_callback is not None:
             def idle(callback=self._complete_callback):
-                with Gdk.lock:
+                with threading.Lock():
                     callback()
-            GObject.idle_add(self._complete_callback,
+            GLib.idle_add(self._complete_callback,
                              priority=self.priority)
 
     def stop(self):
@@ -191,9 +188,9 @@ def gcall(func, *args, **kwargs):
     it inside Gtk's main loop makes it thread safe.
     """
     def idle():
-        with Gdk.lock:
+        with threading.Lock():
             return bool(func(*args, **kwargs))
-    return GObject.idle_add(idle)
+    return GLib.idle_add(idle)
 
 
 def invoke_in_mainloop(func, *args, **kwargs):
@@ -234,10 +231,10 @@ def gtk_threadsafe(func):
          Add support for keyword arguments in callbacks by supporting functions
          wrapped by `functools.partial()`.  Also, ignore callback return value
          to prevent callback from being called repeatedly indefinitely.  See the
-         `GObject.idle_add() documentation`_ for further information.
+         `GLib.idle_add() documentation`_ for further information.
 
 
-     .. _`GObject.idle_add() documentation`: http://library.isr.ist.utl.pt/docs/pygtk2reference/gobject-functions.html#function-gobject--idle-add
+     .. _`GLib.idle_add() documentation`: http://library.isr.ist.utl.pt/docs/pygtk2reference/gobject-functions.html#function-gobject--idle-add
 
 
      Parameters
@@ -247,7 +244,7 @@ def gtk_threadsafe(func):
     # Set up GDK threading.
     # XXX This must be done to support running multiple threads in GTK
     # applications.
-    Gtk.Gdk.threads_init()
+    Gdk.threads_init()
 
     # Support
     wraps_func = func.func if isinstance(func, functools.partial) else func
@@ -257,6 +254,6 @@ def gtk_threadsafe(func):
         def _no_return_func(*args):
             func(*args)
 
-        GObject.idle_add(_no_return_func, *args)
+        GLib.idle_add(_no_return_func, *args)
 
     return _gtk_threadsafe

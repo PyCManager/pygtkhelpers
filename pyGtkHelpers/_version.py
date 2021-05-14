@@ -42,8 +42,8 @@ def get_config():
     cfg.VCS = "git"
     cfg.style = "pep440"
     cfg.tag_prefix = "v"
-    cfg.parentdir_prefix = "pygtkhelpers-"
-    cfg.versionfile_source = "pygtkhelpers/_version.py"
+    cfg.parentdir_prefix = "pyGtkHelpers-"
+    cfg.versionfile_source = "pyGtkHelpers/_version.py"
     cfg.verbose = False
     return cfg
 
@@ -104,8 +104,9 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False,
     return stdout, p.returncode
 
 
-def versions_from_parentdir(parentdir_prefix, root, verbose):
-    """Try to determine the version from the parent directory name.
+def versions_from_parent_dir(parent_dir_prefix, root, verbose):
+    """
+    Try to determine the version from the parent directory name.
 
     Source tarballs conventionally unpack into a directory that includes both
     the project name and a version string. We will also support searching up
@@ -115,8 +116,8 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
 
     for i in range(3):
         dirname = os.path.basename(root)
-        if dirname.startswith(parentdir_prefix):
-            return {"version": dirname[len(parentdir_prefix):],
+        if dirname.startswith(parent_dir_prefix):
+            return {"version": dirname[len(parent_dir_prefix):],
                     "full-revisionid": None,
                     "dirty": False, "error": None, "date": None}
         else:
@@ -125,20 +126,22 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
 
     if verbose:
         print("Tried directories %s but none started with prefix %s" %
-              (str(rootdirs), parentdir_prefix))
-    raise NotThisMethod("rootdir doesn't start with parentdir_prefix")
+              (str(rootdirs), parent_dir_prefix))
+    raise NotThisMethod("rootdir doesn't start with parent_dir_prefix")
 
 
 @register_vcs_handler("git", "get_keywords")
-def git_get_keywords(versionfile_abs):
-    """Extract version information from the given file."""
+def git_get_keywords(version_file_abs):
+    """
+    Extract version information from the given file.
+    """
     # the code embedded in _version.py can just fetch the value of these
     # keywords. When used from setup.py, we don't want to import _version.py,
     # so we do it with a regexp instead. This function is not used from
     # _version.py.
     keywords = {}
     try:
-        f = open(versionfile_abs, "r")
+        f = open(version_file_abs, "r")
         for line in f.readlines():
             if line.strip().startswith("git_refnames ="):
                 mo = re.search(r'=\s*"(.*)"', line)
@@ -511,7 +514,7 @@ def get_versions():
 
     try:
         if cfg.parentdir_prefix:
-            return versions_from_parentdir(cfg.parentdir_prefix, root, verbose)
+            return versions_from_parent_dir(cfg.parentdir_prefix, root, verbose)
     except NotThisMethod:
         pass
 

@@ -16,12 +16,11 @@
 import itertools as it
 import os
 import threading
-import types
 import collections
 
+from itertools import cycle
 from functools import partial
-from gi.repository import GObject, Gtk
-
+from gi.repository import GLib, Gtk, Gdk
 
 image_types = {
     Gtk.MessageType.INFO: Gtk.STOCK_DIALOG_INFO,
@@ -31,7 +30,7 @@ image_types = {
 }
 
 button_types = {
-    None: (),
+    Gtk.ButtonsType.NONE: (),
     Gtk.ButtonsType.OK: (
         Gtk.STOCK_OK,
         Gtk.ResponseType.OK,
@@ -86,9 +85,9 @@ class AlertDialog(Gtk.Dialog):
         self.secondary = Gtk.Label()
         self.details = Gtk.Label()
         self.image = Gtk.image_new_from_stock(
-                    image_types[type],
-                    Gtk.ICON_SIZE_DIALOG
-                    )
+            image_types[type],
+            Gtk.ICON_SIZE_DIALOG
+        )
         self.image.set_alignment(0.0, 0.5)
         self.primary.set_use_markup(True)
 
@@ -107,8 +106,8 @@ class AlertDialog(Gtk.Dialog):
         vbox.pack_start(self.secondary, False, False)
 
         self.expander = Gtk.expander_new_with_mnemonic(
-                'show more _details'
-                )
+            'show more _details'
+        )
         self.expander.set_spacing(5)
         self.expander.add(self.details)
         vbox.pack_start(self.expander, False, False)
@@ -121,7 +120,7 @@ class AlertDialog(Gtk.Dialog):
     def set_primary(self, text):
         # XXX: escape
         self.primary.set_markup('<span weight="bold" size="larger">%s</span>' %
-                                (text, ))
+                                (text,))
 
     def set_secondary(self, text):
         self.set_secondary.set_markup(text)
@@ -149,7 +148,7 @@ def _message_dialog(type, short,
         buttons = []
     else:
         assert buttons is None or isinstance(buttons, tuple)
-        dialog_buttons = None
+        dialog_buttons = Gtk.ButtonsType.NONE
 
     assert parent is None or isinstance(parent, Gtk.Window)
 
@@ -188,14 +187,12 @@ def add_filters(dialog, filters):
         filter_text.set_name(f['name'])
         if 'mime_type' in f:
             mime_types = f['mime_type']
-            #if isinstance(mime_types, types.StringTypes):
             if not isinstance(mime_types, collections.Iterable):
                 mime_types = [mime_types]
             for mime_type in mime_types:
                 filter_text.add_mime_type(mime_type)
         elif 'pattern' in f:
             patterns = f['pattern']
-            #if isinstance(patterns, types.StringTypes):
             if not isinstance(patterns, collections.Iterable):
                 patterns = [patterns]
             for pattern in patterns:
@@ -221,9 +218,16 @@ def simple(type, short, long=None,
                            default=default, **kw)
 
 
-def open_filechooser(title, parent=None, patterns=None,
-                     folder=None, filter=None, multiple=False,
-                     _before_run=None, action=None):
+def open_file_chooser(
+        title,
+        parent=None,
+        patterns=None,
+        folder=None,
+        filter=None,
+        multiple=False,
+        _before_run=None,
+        action=None
+):
     """An open dialog.
 
     :param parent: window or None
@@ -236,44 +240,50 @@ def open_filechooser(title, parent=None, patterns=None,
 
     assert not (patterns and filter)
     if multiple:
-        if action is not None and action != Gtk.FILE_CHOOSER_ACTION_OPEN:
+        if action is not None and action != Gtk.FileChooserAction.OPEN:
             raise ValueError('`multiple` is only valid for the action '
                              '`Gtk.FileChooserAction.OPEN`.')
         action = Gtk.FileChooserAction.OPEN
     else:
         assert action is not None
-    filechooser = Gtk.FileChooserDialog(title,
-                                        parent,
-                                        action,
-                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                         Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+    file_chooser = Gtk.FileChooserDialog(
+        title=title,
+        transient_for=parent,
+        action=action
+    )
+    file_chooser.add_buttons(
+        Gtk.STOCK_CANCEL,
+        Gtk.ResponseType.CANCEL,
+        Gtk.STOCK_OPEN,
+        Gtk.ResponseType.OK
+    )
     if multiple:
-        filechooser.set_select_multiple(True)
+        file_chooser.set_select_multiple(True)
 
     if patterns or filter:
         if not filter:
             filter = Gtk.FileFilter()
             for pattern in patterns:
                 filter.add_pattern(pattern)
-        filechooser.set_filter(filter)
-    filechooser.set_default_response(Gtk.ResponseType.OK)
+        file_chooser.set_filter(filter)
+    file_chooser.set_default_response(Gtk.ResponseType.OK)
 
     if folder:
-        filechooser.set_current_folder(folder)
+        file_chooser.set_current_folder(folder)
 
     try:
         if _before_run is not None:
-            _before_run(filechooser)
-        response = filechooser.run()
+            _before_run(file_chooser)
+        response = file_chooser.run()
         if response not in (Gtk.ResponseType.OK, Gtk.ResponseType.NONE):
             return
 
         if multiple:
-            return filechooser.get_filenames()
+            return file_chooser.get_filenames()
         else:
-            return filechooser.get_filename()
+            return file_chooser.get_filename()
     finally:
-        _destroy(filechooser)
+        _destroy(file_chooser)
 
 
 def ask_overwrite(filename, parent=None, **kw):
@@ -287,42 +297,61 @@ def ask_overwrite(filename, parent=None, **kw):
     return result == Gtk.ResponseType.YES
 
 
-def save(title='Save', parent=None, current_name='', folder=None,
-         _before_run=None, _before_overwrite=None):
+def save(
+        title='Save',
+        parent=None,
+        current_name='',
+        folder=None,
+        _before_run=None,
+        _before_overwrite=None
+):
     """Displays a save dialog."""
-    filechooser = Gtk.FileChooserDialog(title, parent,
-                                        Gtk.FileChooserAction.SAVE,
-                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                         Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+    file_chooser = Gtk.FileChooserDialog(
+        title=title,
+        transient_for=parent,
+        action=Gtk.FileChooserAction.SAVE
+    )
+    file_chooser.add_buttons(
+        Gtk.STOCK_CANCEL,
+        Gtk.ResponseType.CANCEL,
+        Gtk.STOCK_SAVE,
+        Gtk.ResponseType.OK
+    )
     if current_name:
-        filechooser.set_current_name(current_name)
-    filechooser.set_default_response(Gtk.ResponseType.OK)
+        file_chooser.set_current_name(current_name)
+    file_chooser.set_default_response(Gtk.ResponseType.OK)
 
     if folder:
-        filechooser.set_current_folder(folder)
+        file_chooser.set_current_folder(folder)
 
     path = None
     while True:
         if _before_run:
-            _before_run(filechooser)
+            _before_run(file_chooser)
             _before_run = None  # XXX: find better implications
-        response = filechooser.run()
+        response = file_chooser.run()
         if response != Gtk.ResponseType.OK:
             path = None
             break
 
-        path = filechooser.get_filename()
+        path = file_chooser.get_filename()
         if not os.path.exists(path):
             break
 
         if ask_overwrite(path, parent, _before_run=_before_overwrite):
             break
         _before_overwrite = None  # XXX: same
-    _destroy(filechooser)
+    _destroy(file_chooser)
     return path
 
 
-def input(title, value=None, label=None, parent=None, _before_run=None):
+def input(
+        title,
+        value=None,
+        label=None,
+        parent=None,
+        _before_run=None
+):
     d = Gtk.Dialog(title=title, buttons=button_types[Gtk.ButtonsType.OK_CANCEL])
 
     e = Gtk.Entry()
@@ -336,7 +365,7 @@ def input(title, value=None, label=None, parent=None, _before_run=None):
         hbox = Gtk.HBox()
         hbox.set_spacing(6)
         hbox.set_border_width(6)
-        hbox.add(Gtk.Label(label))
+        hbox.add(Gtk.Label(label=label))
         hbox.add(e)
         hbox.show_all()
         d.vbox.add(hbox)
@@ -354,33 +383,35 @@ def input(title, value=None, label=None, parent=None, _before_run=None):
         return res
 
 
-open = partial(open_filechooser,
-               title='Open',
-               action=Gtk.FileChooserAction.OPEN)
+open = partial(
+    open_file_chooser,
+    title='Open',
+    action=Gtk.FileChooserAction.OPEN
+)
 
-
-select_folder = partial(open_filechooser,
-                        title='Select folder',
-                        action=Gtk.FileChooserAction.SELECT_FOLDER)
-
+select_folder = partial(
+    open_file_chooser,
+    title='Select folder',
+    action=Gtk.FileChooserAction.SELECT_FOLDER
+)
 
 # Show an error dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple` parameters
 error = partial(simple, Gtk.MessageType.ERROR)
 
-
 # Show an info dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple` parameters
 info = partial(simple, Gtk.MessageType.INFO)
-
 
 # Show a warning dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple` parameters
 warning = partial(simple, Gtk.MessageType.WARNING)
 
-
 #  A yes/no question dialog, see :func:`~pyGtkHelpers.ui.dialogs.simple`
 #  parameters
-yesno = partial(simple, Gtk.MessageType.WARNING,
-                default=Gtk.ResponseType.YES,
-                buttons=Gtk.ButtonsType.YES_NO,)
+yesno = partial(
+    simple,
+    Gtk.MessageType.WARNING,
+    default=Gtk.ResponseType.YES,
+    buttons=Gtk.ButtonsType.YES_NO,
+)
 
 
 def animation_dialog(images, delay_s=1., loop=True, **kwargs):
@@ -406,8 +437,9 @@ def animation_dialog(images, delay_s=1., loop=True, **kwargs):
         Message dialog with animation displayed in `Gtk.Image` widget when
         dialog is run.
     """
+
     def _as_pixbuf(image):
-        if isinstance(image, types.StringTypes):
+        if isinstance(image, collections.Iterable):
             return Gtk.gdk.pixbuf_new_from_file(image)
         else:
             return image
@@ -415,7 +447,7 @@ def animation_dialog(images, delay_s=1., loop=True, **kwargs):
     pixbufs = map(_as_pixbuf, images)
 
     # Need this to support background thread execution with GTK.
-    Gtk.gdk.threads_init()
+    Gdk.threads_init()
 
     dialog = Gtk.MessageDialog(**kwargs)
 
@@ -433,14 +465,15 @@ def animation_dialog(images, delay_s=1., loop=True, **kwargs):
     def _animate(dialog):
         def __animate():
             if loop:
-                frames = it.cycle(pixbufs)
+                frames = cycle(pixbufs)
             else:
                 frames = pixbufs
 
             for pixbuf_i in frames:
-                GObject.idle_add(image.set_from_pixbuf, pixbuf_i)
+                GLib.idle_add(image.set_from_pixbuf, pixbuf_i)
                 if stop_animation.wait(delay_s):
                     break
+
         thread = threading.Thread(target=__animate)
         thread.daemon = True
         thread.start()
@@ -461,7 +494,7 @@ def yesno(message, title=None):
                          Gtk.STOCK_YES, Gtk.ResponseType.YES))
 
     if message is not None:
-        label = Gtk.Label(message)
+        label = Gtk.Label(label=message)
         box = dialog.get_content_area()
         hbox = Gtk.HBox()
         hbox.pack_start(label, False, False, 10)

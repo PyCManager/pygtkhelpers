@@ -2,8 +2,8 @@
 import logging
 import os
 
-import gtk
-from ...delegates import SlaveView
+from gi.repository import Gtk
+from pyGtkHelpers.delegates import SlaveView
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class GtkCairoView(SlaveView):
         super(GtkCairoView, self).__init__()
 
     def create_ui(self):
-        self.widget = gtk.DrawingArea()
+        self.widget = Gtk.DrawingArea()
         self.widget.set_size_request(self.width, self.height)
         self.window_xid = None
         self._set_window_title = False

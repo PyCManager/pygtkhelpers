@@ -1,132 +1,108 @@
-from py.test import importorskip
-import gtk
-from pyGtkHelpers.utils import refresh_gui
-from pyGtkHelpers.ui.widgets import StringList, AttrSortCombo, \
-    EmptyTextViewFiller
-from pyGtkHelpers.addons import apply_addon
+import unittest
+import gi
+
+gi.require_version('Gtk', '3.0')
+
+from gi.repository import Gtk
+from pyGtkHelpers.ui.widgets import StringList, AttrSortCombo
 from pyGtkHelpers.ui.objectlist import ObjectList
-
-def pytest_funcarg__pl(request):
-    return StringList()
-
-def pytest_funcarg__etf(request):
-    etf = gtk.TextView()
-    apply_addon(etf, EmptyTextViewFiller, empty_text='enter something')
-    w = gtk.Window()
-    v = gtk.VBox()
-    w.add(v)
-    e = gtk.Entry()
-    v.add(e)
-    v.add(etf)
-    w.show()
-    return etf, e
-
-def test_proxy_stringlist_create():
-    pl = StringList()
-    assert not pl.view.get_headers_visible()
+from unittest.mock import Mock
 
 
-def test_sl_set_value(pl):
-    pl.value = ['a', 'b']
-
-    assert pl.value == ['a', 'b']
+pl = StringList()
 
 
-def test_sl_add_button(pl):
-    assert len(pl.value) == 0
-    pl.add_button.clicked()
-    assert pl.value == ['New Item']
+class TestWidgets(unittest.TestCase):
 
-def test_sl_add_selects(pl):
-    pl.add_button.clicked()
-    text = pl.value_entry.get_text()
-    assert text == 'New Item'
-    assert pl.value_entry.props.editable
+    def test_proxy_stringlist_create(self):
+        self.assertFalse(pl.view.get_headers_visible())
 
-def test_pl_remove_desensible(pl):
-    pl.add_button.clicked()
-    pl.rem_button.clicked()
-    assert pl.value == []
-    assert not pl.value_entry.props.sensitive
-    assert not pl.value_entry.get_text()
-    pl.add_button.clicked()
+    def test_sl_set_value(self):
+        pl.value = ['a', 'b']
+        self.assertEqual(pl.value, ['a', 'b'])
 
-    assert pl.value_entry.props.sensitive
+    def test_sl_add_button(self):
+        assert len(pl.value) == 0
+        pl.add_button.clicked()
+        self.assertEqual(pl.value, ['New Item'])
+
+    def test_sl_add_selects(self):
+        pl.add_button.clicked()
+        text = pl.value_entry.get_text()
+        self.assertEqual(text, 'New Item')
+        self.assertTrue(pl.value_entry.props.editable)
+
+    def test_pl_remove_desensible(self):
+        pl.add_button.clicked()
+        pl.rem_button.clicked()
+        self.assertEqual(pl.value, [])
+
+        self.assertFalse(pl.value_entry.props.sensitive)
+        self.assertEqual(pl.value_entry.get_text(), '')
+        pl.add_button.clicked()
+
+        self.assertTrue(pl.value_entry.props.sensitive)
+
+    def test_pl_edit(self):
+        pl.add_button.clicked()
+        pl.value_entry.set_text('test')
+        self.assertEqual(pl.value, ['test'])
+
+    def test_attrsortcombo_with_treeview(self):
+
+        ol = Mock(spec=Gtk.TreeView)
+        model = ol.get_model.return_value = Mock(spec=Gtk.TreeSortable)
+
+        sort = AttrSortCombo(ol, [
+            ('name', 'Der name'),
+            ('age', 'Das Alter'),
+            ], 'name')
+
+        sort_func = model.set_default_sort_func
+        (func, name), kw = sort_func.call_args
+        self.assertEqual(name, 'Der name')
+
+        sort._proxy.update('age')
+        (func, name), kw = sort_func.call_args
+        self.assertEqual(name, 'Der name')
+
+        # the combo is connected
+        sort._combo.set_active(0)
+        (func, name), kw = sort_func.call_args
+        self.assertEqual(name, 'Der name')
+
+        col = model.set_sort_column_id
+        self.assertEqual(col.call_args[0], (-1, Gtk.SortType.ASCENDING))
+
+        sort._order_button.set_active(True)
+        self.assertEqual(col.call_args[0], (-1, Gtk.SortType.DESCENDING))
+
+    def test_attrsortcombo_with_objectlist(self):
+
+        ol = Mock(spec=ObjectList)
+
+        sort = AttrSortCombo(ol, [
+            ('name', 'Der name'),
+            ('age', 'Das Alter'),
+            ], 'name')
+
+        (name, order), kw = ol.sort_by.call_args
+        self.assertEqual(name, 'Der name')
+
+        sort._proxy.update('age')
+        name, order = ol.sort_by.call_args[0]
+        print(name, order)
+        self.assertEqual(name, 'Der name')
+
+        # the combo is connected
+        sort._combo.set_active(0)
+        name, order = ol.sort_by.call_args[0]
+        self.assertEqual(order, Gtk.SortType.ASCENDING)
+
+        sort._order_button.set_active(True)
+        name, order = ol.sort_by.call_args[0]
+        self.assertEqual(order, Gtk.SortType.DESCENDING)
 
 
-
-def test_pl_edit(pl):
-    pl.add_button.clicked()
-    pl.value_entry.set_text('test')
-    assert pl.value == ['test']
-
-
-def test_attrsortcombo_with_treeview():
-    mock = importorskip('mock')
-
-    ol = mock.Mock(spec=gtk.TreeView)
-    model = ol.get_model.return_value = mock.Mock(spec=gtk.TreeSortable)
-
-    sort = AttrSortCombo(ol, [
-        ('name', 'Der name'),
-        ('age', 'Das Alter'),
-        ], 'name')
-
-    sort_func = model.set_default_sort_func
-    (func, name), kw = sort_func.call_args
-    assert name == 'name'
-
-    sort._proxy.update('age')
-    (func, name), kw = sort_func.call_args
-    assert name == 'age'
-
-    sort._combo.set_active(0) # the combo is connected
-    (func, name), kw = sort_func.call_args
-    assert name == 'name'
-
-    col = model.set_sort_column_id
-    assert col.call_args[0] == (-1, gtk.SORT_ASCENDING)
-
-    sort._order_button.set_active(True)
-    assert col.call_args[0] == (-1, gtk.SORT_DESCENDING)
-
-def test_attrsortcombo_with_objectlist():
-
-    mock = importorskip('mock')
-
-    ol = mock.Mock(spec=ObjectList)
-
-    sort = AttrSortCombo(ol, [
-        ('name', 'Der name'),
-        ('age', 'Das Alter'),
-        ], 'name')
-
-    (name, order), kw = ol.sort_by.call_args
-    assert name == 'name'
-
-    sort._proxy.update('age')
-    name, order = ol.sort_by.call_args[0]
-    print (name, order)
-    assert name == 'age'
-
-    sort._combo.set_active(0) # the combo is connected
-    name, order = ol.sort_by.call_args[0]
-    assert order == gtk.SORT_ASCENDING
-
-    sort._order_button.set_active(True)
-    name, order = ol.sort_by.call_args[0]
-    assert order == gtk.SORT_DESCENDING
-
-
-def test_empty_text_filler(etf):
-    etf, e = etf
-    etf.grab_focus()
-    refresh_gui(0.1, 0.1)
-    e.grab_focus()
-    refresh_gui(0.2, 0.2)
-    assert etf.get_buffer().props.text == 'enter something'
-    assert etf.addons.empty_filler.empty
-    etf.grab_focus()
-    refresh_gui(0.2, 0.2)
-    assert etf.get_buffer().props.text == ''
-
+if __name__ == '__main__':
+    unittest.main()

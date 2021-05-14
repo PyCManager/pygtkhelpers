@@ -1,3 +1,15 @@
+# -*- coding: utf-8 -*-
+
+"""
+    pyGtkHelpers.ui.list_select
+    ~~~~~~~~~~~~~~~
+
+    List select.
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
 from gi.repository import Gtk
 from pyGtkHelpers.delegates import WindowView, SlaveView
 from pyGtkHelpers.ui.objectlist import ObjectList, Column

@@ -23,7 +23,7 @@ class CheckCalled(object):
 
         >>> from gi.repository import Gtk
         >>> from pyGtkHelpers.utils import refresh_gui
-        >>> b = gtk.Button()
+        >>> b = Gtk.Button()
         >>> check = CheckCalled(b, 'clicked')
         >>> b.clicked()
         >>> assert check.called

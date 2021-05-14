@@ -8,7 +8,7 @@ from pyGtkHelpers.utils import no_stderr
 from gi.repository import Gtk
 from jsonschema import Draft4Validator
 from pandas import DataFrame
-from .ui.form_view_dialog import FormViewDialog, create_form_view
+from pyGtkHelpers.ui.form_view_dialog import FormViewDialog, create_form_view
 
 logger = logging.getLogger(__name__)
 
@@ -449,10 +449,8 @@ def schema_dialog(schema, data=None, device_name=None, max_width=None,
         df_modes = df_modes.loc[query]
         if not df_modes.shape[0]:
             raise KeyError('No compatible video mode found.')
-        config = df_modes.sort_values(['width', 'framerate'],
-                                      ascending=False).iloc[0]
-        pipeline_command = pu.pipeline_command_from_json(config,
-                                                         colorspace='rgb')
+        config = df_modes.sort_values(['width', 'framerate'], ascending=False).iloc[0]
+        pipeline_command = pu.pipeline_command_from_json(config, colorspace='rgb')
         dialog = MetaDataDialog(schema, pipeline_command, **kwargs)
     with no_stderr():
         valid, results = dialog.run(values=data)

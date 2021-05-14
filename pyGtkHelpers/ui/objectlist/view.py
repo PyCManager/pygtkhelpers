@@ -47,7 +47,7 @@ class ObjectTreeViewBase(Gtk.TreeView):
         self.model = self.create_model()
         self.model_base = self.model
         self.model_filter = self.model.filter_new()
-        self.model_sort = Gtk.TreeModelSort(self.model_filter)
+        self.model_sort = Gtk.TreeModelSort(model=self.model_filter)
         self.model_tree = self.model_sort
         self.set_model(self.model_sort)
         # setup sorting
@@ -162,7 +162,7 @@ class ObjectTreeViewBase(Gtk.TreeView):
     def _get_selected_items(self):
         """List of currently selected items"""
         selection = self.get_selection()
-        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SelectionMode.MULTIPLE:
             raise AttributeError('selected_items only valid for '
                                  'select_multiple')
         model, selected_paths = selection.get_selected_rows()
@@ -173,7 +173,7 @@ class ObjectTreeViewBase(Gtk.TreeView):
 
     def _set_selected_items(self, new_selection):
         selection = self.get_selection()
-        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SelectionMode.MULTIPLE:
             raise AttributeError('selected_items only valid for '
                                  'select_multiple')
         selection.unselect_all()
@@ -208,7 +208,7 @@ class ObjectTreeViewBase(Gtk.TreeView):
     def _get_selected_ids(self):
         """List of currently selected ids"""
         selection = self.get_selection()
-        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SelectionMode.MULTIPLE:
             raise AttributeError('selected_ids only valid for select_multiple')
         model, selected_paths = selection.get_selected_rows()
         if selected_paths:
@@ -218,7 +218,7 @@ class ObjectTreeViewBase(Gtk.TreeView):
 
     def _set_selected_ids(self, new_selection):
         selection = self.get_selection()
-        if selection.get_mode() != Gtk.SELECTION_MULTIPLE:
+        if selection.get_mode() != Gtk.SelectionMode.MULTIPLE:
             raise AttributeError('selected_ids only valid for select_multiple')
         selection.unselect_all()
         if new_selection is None:
@@ -318,10 +318,10 @@ class ObjectTreeViewBase(Gtk.TreeView):
                           sorting
         """
         # work out the direction
-        if direction in ('+', 'asc', Gtk.SORT_ASCENDING):
-            direction = Gtk.SORT_ASCENDING
-        elif direction in ('-', 'desc', Gtk.SORT_DESCENDING):
-            direction = Gtk.SORT_DESCENDING
+        if direction in ('+', 'asc', Gtk.SortType.ASCENDING):
+            direction = Gtk.SortType.ASCENDING
+        elif direction in ('-', 'desc', Gtk.SortType.DESCENDING):
+            direction = Gtk.SortType.DESCENDING
         else:
             raise AttributeError('unrecognised direction')
         if callable(attr_or_key):
@@ -368,17 +368,17 @@ class ObjectTreeViewBase(Gtk.TreeView):
     def _path_for_iter(self, giter):
         return self.model.get_string_from_iter(giter)
 
-    def _object_at_iter(self, iter):
-        return self.model[iter][0]
+    def _object_at_iter(self, itr):
+        return self.model[itr][0]
 
-    def _object_at_view_iter(self, iter):
-        return self.model_filter[iter][0]
+    def _object_at_view_iter(self, itr):
+        return self.model_filter[itr][0]
 
-    def _object_at_sort_iter(self, iter):
-        return self.model_sort[iter][0]
+    def _object_at_sort_iter(self, itr):
+        return self.model_sort[itr][0]
 
-    def _object_at_child_sort_iter(self, iter):
-        giter = self.model_sort.convert_child_iter_to_iter(None, iter)
+    def _object_at_child_sort_iter(self, itr):
+        giter = self.model_sort.convert_child_iter_to_iter(None, itr)
         return self.model_sort[giter][0]
 
     def _object_at_path(self, path):
@@ -426,10 +426,10 @@ class ObjectTreeViewBase(Gtk.TreeView):
     def _emit_for_path(self, path, event):
         item = self._object_at_sort_path(path)
         signal_map = {
-            (1, Gdk.BUTTON_PRESS): 'item-left-clicked',
-            (3, Gdk.BUTTON_PRESS): 'item-right-clicked',
-            (2, Gdk.BUTTON_PRESS): 'item-middle-clicked',
-            (1, Gdk._2BUTTON_PRESS): 'item-double-clicked',
+            (1, Gdk.EventType.BUTTON_PRESS): 'item-left-clicked',
+            (3, Gdk.EventType.BUTTON_PRESS): 'item-right-clicked',
+            (2, Gdk.EventType.BUTTON_PRESS): 'item-middle-clicked',
+            (1, Gdk.EventType._2BUTTON_PRESS): 'item-double-clicked',
         }
         signal_name = signal_map.get((event.button, event.type))
         if signal_name is not None:
@@ -459,15 +459,15 @@ class ObjectTreeViewBase(Gtk.TreeView):
             pcol = column.get_data('pyGtk.helpers::column')
             return pcol.render_tooltip(tooltip, obj)
 
-    def _on_row_activated(self, objectlist, path, column, *k):
+    def _on_row_activated(self, object_list, path, column, *k):
         self.emit('item-activated', self._object_at_sort_iter(path))
 
     def _visible_func(self, obj):
         # XXX: this one gets dynamically replaced
         return True
 
-    def _internal_visible_func(self, model, iter, visible_func):
-        return visible_func(model[iter][0])
+    def _internal_visible_func(self, model, itr, visible_func):
+        return visible_func(model[itr][0])
 
     def _attr_sort_func(self, model, itr1, itr2, attr):
         # how the hell is this a filter model?
@@ -475,9 +475,9 @@ class ObjectTreeViewBase(Gtk.TreeView):
         obj2 = self._object_at_iter(itr2)
         return cmp(getattr(obj1, attr, None), getattr(obj2, attr, None))
 
-    def _key_sort_func(self, model, iter1, iter2, key):
-        obj1 = self._object_at_iter(iter1)
-        obj2 = self._object_at_iter(iter2)
+    def _key_sort_func(self, model, itr1, itr2, key):
+        obj1 = self._object_at_iter(itr1)
+        obj2 = self._object_at_iter(itr2)
         return cmp(key(obj1), key(obj2))
 
     def _attr_search_func(self, model, column, key, itr, attr):
@@ -548,12 +548,12 @@ class ObjectList(ObjectTreeViewBase):
             self.selected_item = item
         self.emit('item-added', item)
 
-    def extend(self, iter):
+    def extend(self, itr):
         """Add a sequence of items to the end of the list
 
-        :param iter: The iterable of items to add.
+        :param itr: The iterable of items to add.
         """
-        for item in iter:
+        for item in itr:
             self.append(item)
 
 
@@ -652,14 +652,14 @@ class ObjectTree(ObjectTreeViewBase):
         if select:
             self.selected_item = item
 
-    def extend(self, iter, parent=None):
+    def extend(self, itr, parent=None):
         """Add a sequence of items to the end of the list
 
-        :param iter: The iterable of items to add.
+        :param itr: The iterable of items to add.
         :param parent: The node to add the items as a child of, or None for
                        top-level nodes.
         """
-        for item in iter:
+        for item in itr:
             self.append(item, parent)
 
     def expand_item(self, item, open_all=True):
@@ -685,7 +685,7 @@ class ObjectTree(ObjectTreeViewBase):
         """
         return self.row_expanded(self._path_for(item))
 
-    def _on_row_expanded(self, objecttree, giter, path):
+    def _on_row_expanded(self, object_tree, giter, path):
         item = self._object_at_sort_iter(giter)
         if item in self.selected_items:
             # Since this item was selected before expanding, select all
@@ -695,7 +695,7 @@ class ObjectTree(ObjectTreeViewBase):
             self.selection.handler_unblock(self.selection_connect)
         return self.emit('item-expanded', self._object_at_sort_iter(giter))
 
-    def _on_row_collapsed(self, objecttree, giter, path):
+    def _on_row_collapsed(self, object_tree, giter, path):
         return self.emit('item-collapsed', self._object_at_sort_iter(giter))
 
     def item_iter(self, item):

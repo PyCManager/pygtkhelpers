@@ -41,7 +41,7 @@ from pyGtkHelpers.utils import gsignal
 from pyGtkHelpers.ui.widgets import StringList, SimpleComboBox
 
 
-class GObjectProxy(GObject.GObject):
+class GObjectProxy(GObject.Object):
     """A proxy for a Gtk.Widget
 
     This proxy provides a common api to Gtk widgets, so that they can be used
@@ -55,7 +55,7 @@ class GObjectProxy(GObject.GObject):
     signal_name = None
 
     def __init__(self, widget):
-        GObject.GObject.__init__(self)
+        GObject.Object.__init__(self)
         self.widget = widget
         self.connections = []
         self.connect_widget()
@@ -337,7 +337,7 @@ def proxy_for(widget):
     return proxy_type(widget)
 
 
-class ProxyGroup(GObject.GObject):
+class ProxyGroup(GObject.Object):
     """A controller to handle multiple proxies, and sub-groups
 
     A ProxyGroup is a bridge to reduce multiple proxies and sub-groups to a
@@ -347,7 +347,7 @@ class ProxyGroup(GObject.GObject):
     gsignal('changed', object, str, object)
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        GObject.Object.__init__(self)
 
     def add_proxy(self, name, proxy):
         """Add a proxy to this group

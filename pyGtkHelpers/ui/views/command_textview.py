@@ -3,12 +3,11 @@ import os
 import re
 import sys
 
-import gobject
-import gtk
 import trollius as asyncio
 
-from ...delegates import SlaveView
-from ...utils import gsignal, refresh_gui
+from gi.repository import Gtk, GLib
+from pyGtkHelpers.delegates import SlaveView
+from pyGtkHelpers.utils import gsignal, refresh_gui
 
 
 class CommandTextView(SlaveView):
@@ -16,11 +15,11 @@ class CommandTextView(SlaveView):
     gsignal('data-written', int, str)
 
     def create_ui(self):
-        self.scroll = gtk.ScrolledWindow()
-        self.scroll.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC
-        self.scroll.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
+        self.scroll = Gtk.ScrolledWindow()
+        self.scroll.props.hscrollbar_policy = Gtk.PolicyType.AUTOMATIC
+        self.scroll.props.vscrollbar_policy = Gtk.PolicyType.AUTOMATIC
 
-        self.text_view = gtk.TextView()
+        self.text_view = Gtk.TextView()
         self.scroll.add_with_viewport(self.text_view)
         self.text_view.props.editable = False
 
@@ -64,7 +63,7 @@ class CommandTextView(SlaveView):
             loop.call_soon(_refresh_gui)
             transport, protocol = loop.run_until_complete(proc)
             loop.run_forever()
-        except Exception, exception:
+        except Exception as exception:
             self._write(2, str(exception))
         else:
             return transport.get_returncode()
@@ -92,9 +91,14 @@ class CommandTextView(SlaveView):
         return True
 
 
-def get_run_command_dialog(command, shell=False, title='', data_callback=None,
-                           parent=None, **kwargs):
-    '''
+def get_run_command_dialog(
+        command,
+        shell=False,
+        title='',
+        data_callback=None,
+        parent=None, **kwargs
+):
+    """
     Launch command in a subprocess and create a dialog window to monitor the
     output of the process.
 
@@ -122,36 +126,36 @@ def get_run_command_dialog(command, shell=False, title='', data_callback=None,
 
     Returns
     -------
-    gtk.Dialog
+    Gtk.Dialog
         Dialog with a progress bar and an expandable text view to monitor the
         output of the specified :data:`command`.
 
         .. note::
 
             Subprocess is launched before returning dialog.
-    '''
-    dialog = gtk.Dialog(title=title or None, parent=parent)
+    """
+    dialog = Gtk.Dialog(title=title or None, parent=parent)
     dialog.set_size_request(540, -1)
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         setattr(dialog.props, key, value)
 
-    dialog.add_buttons(gtk.STOCK_OK, gtk.RESPONSE_OK)
-    dialog.set_default_response(gtk.RESPONSE_OK)
+    dialog.add_buttons(Gtk.STOCK_OK, Gtk.RESPONSE_OK)
+    dialog.set_default_response(Gtk.RESPONSE_OK)
 
     content_area = dialog.get_content_area()
-    label = gtk.Label(title)
+    label = Gtk.Label(label=title)
     label.props.xalign = .1
     content_area.pack_start(label, expand=False, fill=True, padding=10)
 
-    progress_bar = gtk.ProgressBar()
+    progress_bar = Gtk.ProgressBar()
 
-    expander = gtk.Expander('Details')
+    expander = Gtk.Expander(label='Details')
 
     # Resize window based on whether or not expander is open.
     expander.connect('activate', functools
                      .partial(lambda w, e, *args:
                               w.set_size_request(540, -1 if e.props.expanded
-                                                 else 480), dialog))
+                              else 480), dialog))
 
     command_view = CommandTextView()
     if data_callback is not None:
@@ -175,14 +179,14 @@ def get_run_command_dialog(command, shell=False, title='', data_callback=None,
             progress_bar.pulse()
             return True
 
-        timeout_id = gobject.timeout_add(250, _pulse)
+        timeout_id = GLib.timeout_add(250, _pulse)
         command_view.run(command, shell=shell)
-        gobject.source_remove(timeout_id)
+        GLib.source_remove(timeout_id)
         progress_bar.set_fraction(1.)
         button.props.sensitive = True
         label.set_markup('{} <b>done</b>.'.format(title))
 
-    gobject.idle_add(_run_command, label, progress_bar, button, command_view,
+    GLib.idle_add(_run_command, label, progress_bar, button, command_view,
                      command, shell)
     return dialog
 
@@ -194,12 +198,17 @@ if __name__ == '__main__':
     # Update label to display each `.exe` file encountered.
     cre_exe_file = re.compile(r'(?P<filename>\w+\.exe)')
 
+
     def data_callback(dialog, command_view, fd, data):
         for match_i in cre_exe_file.finditer(data):
             (dialog.get_content_area().get_children()[0]
              .set_markup('`.exe` file: <b>{}</b>'
                          .format(match_i.group('filename'))))
 
-    response = get_run_command_dialog(command, title=title, shell=True,
-                                      resizable=False,
-                                      data_callback=data_callback).run()
+
+    response = get_run_command_dialog(
+        command,
+        title=title,
+        shell=True,
+        resizable=False,
+        data_callback=data_callback).run()

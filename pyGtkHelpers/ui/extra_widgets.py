@@ -1,16 +1,42 @@
+# -*- coding: utf-8 -*-
+
+"""
+    pyGtkHelpers.ui.extra_dialogs
+    ~~~~~~~~~~~~~~~
+
+    Extra Components.
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
 import sys
 import logging
 
 from gi.repository import Gtk
 from pathlib import Path
-from flatland.schema import String, Form, Integer, Float, Enum
+from flatland.schema import (
+    String,
+    Form,
+    Integer,
+    Float,
+    Enum
+)
 
-from ..utils import gsignal
-from ..proxy import widget_proxies, GObjectProxy, proxy_for
-from ..forms import (view_widgets, element_views, ElementBuilder,
-                     IntegerBuilder)
-from .widgets import SimpleComboBox
-from .form_view_dialog import FormViewDialog
+from pyGtkHelpers.utils import gsignal
+from pyGtkHelpers.proxy import (
+    widget_proxies,
+    GObjectProxy,
+    proxy_for
+)
+from pyGtkHelpers.forms import (
+    view_widgets,
+    element_views,
+    ElementBuilder,
+    IntegerBuilder
+)
+from pyGtkHelpers.ui.widgets import SimpleComboBox
+from pyGtkHelpers.ui.form_view_dialog import FormViewDialog
 
 
 VIEW_ENUM = 'enum'
@@ -38,7 +64,6 @@ class FilepathWidget(Gtk.Box):
         """
         Args
         ----
-
             patterns (list) : List of tuples, where each tuple contains two
                 items: 1) label to show in file filter drop-down, and 2) list
                 of glob file patterns to match.
@@ -100,8 +125,11 @@ class FilepathWidget(Gtk.Box):
                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                                  Gtk.STOCK_OPEN, Gtk.ResponseType.OK),
                         starting_dir=None):
-        dialog = Gtk.FileChooserDialog(title=title, action=action,
-                                       buttons=buttons)
+        dialog = Gtk.FileChooserDialog(
+            title=title,
+            action=action,
+            buttons=buttons
+        )
         if starting_dir:
             dialog.set_current_folder(starting_dir)
         dialog.set_default_response(Gtk.ResponseType.OK)
@@ -177,13 +205,13 @@ class FloatBuilder(IntegerBuilder):
     def build(self, widget, style, element, options):
         widget.set_digits(2)
         adj = widget.get_adjustment()
-        min, max = sys.float_info.min, sys.float_info.max
+        minimum, maximum = sys.float_info.min, sys.float_info.max
         for v in element.validators:
             if hasattr(v, 'minimum'):
-                min = v.minimum
+                minimum = v.minimum
             elif hasattr(v, 'maximum'):
-                max = v.maximum
-        args = (min, min, max, 0.1, 10.0)
+                maximum = v.maximum
+        args = (minimum, minimum, maximum, 0.1, 10.0)
         adj.set_all(*args)
         return widget
 

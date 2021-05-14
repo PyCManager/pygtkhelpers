@@ -1,6 +1,6 @@
 import collections
 from gi.repository import Gtk
-from delegates import SlaveView
+from pyGtkHelpers.delegates import SlaveView
 
 
 class FileChooserView(SlaveView):
@@ -37,7 +37,7 @@ class FileChooserView(SlaveView):
                 self.label = Gtk.Label()
             self.box.pack_start(self.label, True, True, 0)
 
-        button = Gtk.Button('Browse...')
+        button = Gtk.Button(label='Browse...')
         if self.action == Gtk.FileChooserAction.SELECT_FOLDER:
             callback = self.on_folder_clicked
         else:
@@ -53,8 +53,12 @@ class FileChooserView(SlaveView):
             parent = parent.get_parent()
 
     def on_file_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(self.title, self.parent, self.action,
-                                       self.buttons)
+        dialog = Gtk.FileChooserDialog(
+            self.title,
+            self.parent,
+            self.action,
+            self.buttons
+        )
         dialog.set_do_overwrite_confirmation(self.confirm_overwrite)
 
         self.add_filters(dialog)
@@ -88,8 +92,12 @@ class FileChooserView(SlaveView):
             dialog.add_filter(filter_text)
 
     def on_folder_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(self.title, self.parent,
-                                       self.action, self.buttons)
+        dialog = Gtk.FileChooserDialog(
+            self.title,
+            self.parent,
+            self.action,
+            self.buttons
+        )
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:

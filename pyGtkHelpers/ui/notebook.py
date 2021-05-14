@@ -1,12 +1,24 @@
+# -*- coding: utf-8 -*-
+
+"""
+    pyGtkHelpers.ui.notebook
+    ~~~~~~~~~~~~~~~
+
+    Notebook.
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
 import os
 import collections
 import webbrowser
 
 from gi.repository import Gtk
 from pathlib import Path
-from ..delegates import SlaveView
-from .dialogs import yesno, add_filters
-from .session import SessionManager
+from pyGtkHelpers.delegates import SlaveView
+from pyGtkHelpers.ui.dialogs import yesno, add_filters
+from pyGtkHelpers.ui.session import SessionManager
 
 
 class NotebookManagerView(SlaveView):
@@ -22,20 +34,18 @@ class NotebookManagerView(SlaveView):
         session_list = NotebookManagerList(self.notebook_manager)
         dialog = Gtk.Dialog(title='Notebook session manager',
                             parent=self.parent,
-                            flags=Gtk.DIALOG_MODAL |
-                            Gtk.DIALOG_DESTROY_WITH_PARENT,
+                            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
                             buttons=(Gtk.STOCK_OK, Gtk.ResponseType.OK))
         dialog.set_transient_for(self.parent)
         dialog.get_content_area().pack_start(session_list.widget)
         return dialog
 
     def create_ui(self):
-        box = Gtk.Box(spacing=6)
-        box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        new_button = Gtk.Button('New...')
-        open_button = Gtk.Button('Open...')
-        manager_button = Gtk.Button('Manage sessions...')
+        new_button = Gtk.Button(label='New...')
+        open_button = Gtk.Button(label='Open...')
+        manager_button = Gtk.Button(label='Manage sessions...')
         new_button.connect('clicked', self.on_new)
         open_button.connect('clicked', self.on_open)
         manager_button.connect('clicked', self.on_manager)
@@ -74,8 +84,12 @@ class NotebookManagerView(SlaveView):
     def on_open(self, button):
         buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                    Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
-        dialog = Gtk.FileChooserDialog("Open notebook", self.parent,
-                                       Gtk.FileChooserAction.OPEN, buttons)
+        dialog = Gtk.FileChooserDialog(
+            "Open notebook",
+            self.parent,
+            Gtk.FileChooserAction.OPEN,
+            buttons
+        )
         add_filters(dialog, [{'name': 'IPython notebook (*.ipynb)',
                               'pattern': '*.ipynb'}])
         dialog.set_current_folder(self.notebook_dir)
@@ -99,8 +113,12 @@ class NotebookManagerView(SlaveView):
         """
         buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                    Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
-        dialog = Gtk.FileChooserDialog("Select notebook template", self.parent,
-                                       Gtk.FileChooserAction.OPEN, buttons)
+        dialog = Gtk.FileChooserDialog(
+            "Select notebook template",
+            self.parent,
+            Gtk.FileChooserAction.OPEN,
+            buttons
+        )
         add_filters(dialog, [{'name': 'IPython notebook (*.ipynb)',
                               'pattern': '*.ipynb'}])
         if self.template_dir is not None:
@@ -111,7 +129,7 @@ class NotebookManagerView(SlaveView):
             output_path = self.notebook_dir.joinpath(selected_path.name)
 
             overwrite = False
-            if output_path.isfile():
+            if output_path.is_file():
                 # response = yesno('%s already exists. Overwrite?' % output_path.name)
                 response = yesno('%s already exists. Overwrite?' % output_path.name,
                                  'Overwrite?')
@@ -120,17 +138,18 @@ class NotebookManagerView(SlaveView):
                 else:
                     counter = 1
                     renamed_path = output_path
-                    while renamed_path.isfile():
-                        new_name = '%s (%d)%s' % (output_path.namebase, counter,
-                                                  output_path.ext)
+                    while renamed_path.is_file():
+                        new_name = '%s (%d)%s' % (output_path.name, counter, output_path.suffix)
                         renamed_path = output_path.parent.joinpath(new_name)
                         counter += 1
                     output_path = renamed_path
 
-            self.notebook_manager\
-                .launch_from_template(selected_path, overwrite=overwrite,
-                                      output_name=output_path.name,
-                                      notebook_dir=self.notebook_dir)
+            self.notebook_manager.launch_from_template(
+                selected_path,
+                overwrite=overwrite,
+                output_name=output_path.name,
+                notebook_dir=self.notebook_dir
+            )
         dialog.destroy()
 
     def stop(self):
@@ -169,24 +188,22 @@ class NotebookManagerList(SlaveView):
             label = Gtk.Label()
             label.set_markup('<b>%s</b>' % header)
             table.attach(label, k, k + 1, 0, 1,
-                         xoptions=Gtk.SHRINK,
-                         yoptions=Gtk.SHRINK,
+                         xoptions=Gtk.AttachOptions.SHRINK,
+                         yoptions=Gtk.AttachOptions.SHRINK,
                          xpadding=x_padding,
                          ypadding=header_y_padding)
 
-        for i, (root, session) in enumerate(sessions.iteritems()):
+        for i, (root, session) in enumerate(sessions.items()):
             i += 1
             root = Path(root)
-            name_label = Gtk.Label(root.name)
+            name_label = Gtk.Label(label=root.name)
             name_label.set_tooltip_text(str(root))
-            url_label = Gtk.Label(session.address)
+            url_label = Gtk.Label(label=session.address)
 
-            stop_button = Gtk.Button('Stop')
-            stop_button.set_tooltip_text('Stop Jupyter notebook for directory '
-                                         '%s' % root)
-            open_button = Gtk.Button('Open')
-            open_button.set_tooltip_text('Open Jupyter notebook for directory '
-                                         '%s' % root)
+            stop_button = Gtk.Button(label='Stop')
+            stop_button.set_tooltip_text('Stop Jupyter notebook for directory %s' % root)
+            open_button = Gtk.Button(label='Open')
+            open_button.set_tooltip_text('Open Jupyter notebook for directory %s' % root)
 
             def open_session(button, session):
                 webbrowser.open_new_tab(session.address)
@@ -208,8 +225,8 @@ class NotebookManagerList(SlaveView):
                 else:
                     x_padding_k = x_padding
                 table.attach(widget, k, k + 1, i, i + 1,
-                             xoptions=Gtk.SHRINK,
-                             yoptions=Gtk.SHRINK,
+                             xoptions=Gtk.AttachOptions.SHRINK,
+                             yoptions=Gtk.AttachOptions.SHRINK,
                              xpadding=x_padding_k,
                              ypadding=y_padding)
         self.table = table

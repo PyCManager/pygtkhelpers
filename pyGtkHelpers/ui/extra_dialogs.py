@@ -1,11 +1,21 @@
+"""
+    pyGtkHelpers.ui.extra_dialogs
+    ~~~~~~~~~~~~~~~
+
+    Extra Components.
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
 import os
 
-import gtk
+from gi.repository import Gtk
 from flatland.schema import String, Form, Integer
 from flatland.validation import ValueAtLeast, ValueAtMost
 
-from .form_view_dialog import FormViewDialog
-from .dialogs import yesno as _yesno
+from pyGtkHelpers.ui.form_view_dialog import FormViewDialog
+from pyGtkHelpers.ui.dialogs import yesno as _yesno
 
 
 class Defaults(object):
@@ -27,14 +37,14 @@ DEFAULTS = Defaults()
 def combobox_set_model_from_list(cb, items):
     """Setup a ComboBox or ComboBoxEntry based on a list of strings."""
     cb.clear()
-    model = gtk.ListStore(str)
+    model = Gtk.ListStore(str)
     for i in items:
         model.append([i])
     cb.set_model(model)
-    if type(cb) == gtk.ComboBoxEntry:
+    if type(cb) == Gtk.ComboBoxEntry:
         cb.set_text_column(0)
-    elif type(cb) == gtk.ComboBox:
-        cell = gtk.CellRendererText()
+    elif type(cb) == Gtk.ComboBox:
+        cell = Gtk.CellRendererText()
         cb.pack_start(cell, True)
         cb.add_attribute(cell, 'text', 0)
 
@@ -78,10 +88,13 @@ def integer_entry_dialog(name, value=0, title='Input value', min_value=None,
     if max_value is not None:
         ValueAtMost(maximum=max_value)
 
-    valid, response = field_entry_dialog(Integer.named(name)
-                                         .using(validators=validators), value,
-                                         title, parent=parent,
-                                         use_markup=use_markup)
+    valid, response = field_entry_dialog(
+        Integer.named(name).using(validators=validators),
+        value,
+        title,
+        parent=parent,
+        use_markup=use_markup
+    )
     if valid:
         return response
     return None
@@ -103,9 +116,15 @@ if os.name == 'nt':
         parent = kwargs.get('parent', None)
         if parent is None:
             parent = DEFAULTS.parent_widget
-        return _yesno(*args, parent=parent, alt_button_order=(gtk.RESPONSE_YES,
-                                                              gtk.RESPONSE_NO),
-                      **kwargs)
+        return _yesno(
+            *args,
+            parent=parent,
+            alt_button_order=(
+                Gtk.ResponseType.YES,
+                Gtk.ResponseType.NO
+            ),
+            **kwargs
+        )
 else:
     def yesno(*args, **kwargs):
         parent = kwargs.get('parent', None)

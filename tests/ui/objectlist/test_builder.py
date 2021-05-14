@@ -1,4 +1,7 @@
 import unittest
+import gi
+
+gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk
 from pyGtkHelpers.ui.objectlist import ObjectList
@@ -16,7 +19,6 @@ class TestBuildSimple(unittest.TestCase):
         b = Gtk.Builder()
         b.add_from_string(uidef)
         objectlist = b.get_object('test')
-        print(objectlist)
         self.assertIsInstance(objectlist, ObjectList)
 
 

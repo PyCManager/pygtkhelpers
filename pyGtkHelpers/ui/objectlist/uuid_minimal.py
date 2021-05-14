@@ -102,7 +102,7 @@ class UUID(object):
                     when the variant is RFC_4122)
     """
 
-    def __init__(self, hex=None, bytes=None, bytes_le=None, fields=None,
+    def __init__(self, hx=None, bts=None, bytes_le=None, fields=None,
                  it=None, version=None):
         r"""Create a UUID from either a string of 32 hexadecimal digits,
         a string of 16 bytes as the 'bytes' argument, a string of 16 bytes
@@ -129,24 +129,24 @@ class UUID(object):
         overriding the given 'hex', 'bytes', 'bytes_le', 'fields', or 'int'.
         """
 
-        if [hex, bytes, bytes_le, fields, it].count(None) != 4:
+        if [hx, bts, bytes_le, fields, it].count(None) != 4:
             raise TypeError('need one of hex, bytes, bytes_le, fields, or int')
-        if hex is not None:
-            hex = hex.replace('urn:', '').replace('uuid:', '')
-            hex = hex.strip('{}').replace('-', '')
-            if len(hex) != 32:
+        if hx is not None:
+            hx = hx.replace('urn:', '').replace('uuid:', '')
+            hx = hx.strip('{}').replace('-', '')
+            if len(hx) != 32:
                 raise ValueError('badly formed hexadecimal UUID string')
-            it = int(hex, 16)
+            it = int(hx, 16)
         if bytes_le is not None:
             if len(bytes_le) != 16:
                 raise ValueError('bytes_le is not a 16-char string')
-            bytes = (bytes_le[3] + bytes_le[2] + bytes_le[1] + bytes_le[0] +
+            bts = (bytes_le[3] + bytes_le[2] + bytes_le[1] + bytes_le[0] +
                      bytes_le[5] + bytes_le[4] + bytes_le[7] + bytes_le[6] +
                      bytes_le[8:])
-        if bytes is not None:
-            if len(bytes) != 16:
+        if bts is not None:
+            if len(bts) != 16:
                 raise ValueError('bytes is not a 16-char string')
-            it = int(('%02x'*16) % tuple(map(ord, bytes)), 16)
+            it = int(('%02x'*16) % tuple(map(ord, bts)), 16)
         if fields is not None:
             if len(fields) != 6:
                 raise ValueError('fields is not a 6-tuple')
@@ -168,7 +168,7 @@ class UUID(object):
             it = ((time_low << 96) | (time_mid << 80) |
                    (time_hi_version << 64) | (clock_seq << 48) | node)
         if it is not None:
-            if not 0 <= it < 1<<128:
+            if not 0 <= it < 1 << 128:
                 raise ValueError('int is out of range (need a 128-bit value)')
         if version is not None:
             if not 1 <= version <= 5:
@@ -183,14 +183,14 @@ class UUID(object):
 
     def __cmp__(self, other):
         if isinstance(other, UUID):
-            return cmp(self.int, other.int)
+            return cmp(self.it, other.it)
         return NotImplemented
 
     def __hash__(self):
-        return hash(self.int)
+        return hash(self.it)
 
     def __int__(self):
-        return self.int
+        return self.it
 
     def __repr__(self):
         return 'UUID(%r)' % str(self)
@@ -199,22 +199,22 @@ class UUID(object):
         raise TypeError('UUID objects are immutable')
 
     def __str__(self):
-        hex = '%032x' % self.int
+        hx = '%032x' % self.it
         return '%s-%s-%s-%s-%s' % (
-            hex[:8], hex[8:12], hex[12:16], hex[16:20], hex[20:])
+            hx[:8], hx[8:12], hx[12:16], hx[16:20], hx[20:])
 
     def get_bytes(self):
-        bytes = ''
+        bts = ''
         for shift in range(0, 128, 8):
-            bytes = chr((self.int >> shift) & 0xff) + bytes
-        return bytes
+            bts = chr((self.it >> shift) & 0xff) + bts
+        return bts
 
-    bytes = property(get_bytes)
+    bts = property(get_bytes)
 
     def get_bytes_le(self):
-        bytes = self.bytes
-        return (bytes[3] + bytes[2] + bytes[1] + bytes[0] +
-                bytes[5] + bytes[4] + bytes[7] + bytes[6] + bytes[8:])
+        bts = self.bts
+        return (bts[3] + bts[2] + bts[1] + bts[0] +
+                bts[5] + bts[4] + bts[7] + bts[6] + bts[8:])
 
     bytes_le = property(get_bytes_le)
 
@@ -304,15 +304,15 @@ def uuid4():
         return UUID(bytes=os.urandom(16), version=4)
     except Exception:
         import random
-        bytes = [chr(random.randrange(256)) for i in range(16)]
-        return UUID(bytes=bytes, version=4)
+        bts = [chr(random.randrange(256)) for i in range(16)]
+        return UUID(bytes=bts, version=4)
 
 
 def uuid5(namespace, name):
     """Generate a UUID from the SHA-1 hash of a namespace UUID and a name."""
     from hashlib import sha1
-    hash = sha1(namespace.bytes + name).digest()
-    return UUID(bytes=hash[:16], version=5)
+    hsh = sha1(namespace.bts + name).digest()
+    return UUID(bytes=hsh[:16], version=5)
 
 
 # The following standard UUIDs are for use with uuid3() or uuid5().

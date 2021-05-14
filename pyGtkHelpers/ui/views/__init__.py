@@ -1,5 +1,5 @@
 def find_closest(df_points, point):
-    '''
+    """
     Parameters
     ----------
     df_points : pandas.DataFrame
@@ -16,6 +16,5 @@ def find_closest(df_points, point):
 
     .. versionchanged:: 0.21
         Discontinue use of deprecated ``pandas.Series.argmin``.
-    '''
-    return df_points.iloc[((df_points - point) ** 2).sum(axis=1).values
-                          .argmin()]
+    """
+    return df_points.iloc[((df_points - point) ** 2).sum(axis=1).values.argmin()]

@@ -2,15 +2,15 @@ from copy import deepcopy
 import re
 import logging
 
-import gtk
+from gi.repository import Gtk
 from flatland import Form, Integer
 
-from ...utils import gsignal
-from ..extra_widgets import get_type_from_schema
-from ..form_view_dialog import FormViewDialog
-from .uuid_minimal import uuid4
-from .column import Column
-from .view import ObjectList
+from pyGtkHelpers.utils import gsignal
+from pyGtkHelpers.ui.extra_widgets import get_type_from_schema
+from pyGtkHelpers.ui.form_view_dialog import FormViewDialog
+from pyGtkHelpers.ui.objectlist.uuid_minimal import uuid4
+from pyGtkHelpers.ui.objectlist.column import Column
+from pyGtkHelpers.ui.objectlist.view import ObjectList
 
 
 class RowFields(object):
@@ -179,7 +179,7 @@ class CombinedFields(ObjectList):
         super(CombinedFields, self).__init__(self._columns, **kwargs)
         s = self.get_selection()
         # Enable multiple row selection
-        s.set_mode(gtk.SELECTION_MULTIPLE)
+        s.set_mode(Gtk.SelectionMode.MULTIPLE)
         self.connect('item-changed', self._on_item_changed)
         self.connect('item-right-clicked', self._on_right_clicked)
         self.enabled_fields_by_form_name = enabled_attrs
@@ -227,7 +227,7 @@ class CombinedFields(ObjectList):
 
     def _get_popup_menu(self, item, column_title, value, row_ids,
                         menu_items=None):
-        popup = gtk.Menu()
+        popup = Gtk.Menu()
 
         def set_attr_value(*args, **kwargs):
             logging.debug('[set_attr_value] args=%s kwargs=%s', args, kwargs)
@@ -264,9 +264,9 @@ class CombinedFields(ObjectList):
         for label, callback in menu_items:
             if label is None:
                 # Assume that this should be separator
-                menu_item = gtk.MenuItem()
+                menu_item = Gtk.MenuItem()
             else:
-                menu_item = gtk.MenuItem(label)
+                menu_item = Gtk.MenuItem(label=label)
                 menu_item.connect('activate', callback)
             popup.add(menu_item)
         popup.show_all()

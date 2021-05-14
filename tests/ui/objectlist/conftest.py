@@ -9,7 +9,8 @@ class User(object):
     def __eq__(self, other):
         return self.name == other.name and self.age == other.age
 
-user_columns = [
+
+items = [
     Column('name', str, editable=True, searchable=True),
     Column('age', int),
     Column('expander', expander=True),
@@ -26,17 +27,9 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_funcarg__items(request):
-    return request.param(user_columns)
+    return request.param(items)
 
 
-def pytest_funcarg__user(request):
-    return User(name='Hans', age=10)
-
-
-def pytest_funcarg__user2(request):
-    return User(name='Gretel', age=11)
-
-
-def pytest_funcarg__user3(request):
-    return User(name='Witch', age=409)
-
+user = User(name='Hans', age=10)
+user2 = User(name='Gretel', age=11)
+user3 = User(name='Witch', age=409)

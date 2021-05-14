@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+
+"""
+    pyGtkHelpers.ui.dict_as_attr_proxy
+    ~~~~~~~~~~~~~~~
+
+    DictAsAttrProxy.
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+
+
 class DictAsAttrProxy(object):
     """
     >>> d = dict(A=1, B=2)

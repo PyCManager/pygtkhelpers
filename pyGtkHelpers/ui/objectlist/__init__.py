@@ -19,7 +19,7 @@ from .combined_fields import *
 
 
 def get_py_dtype(np_dtype):
-    '''
+    """
     Args:
 
         np_dtype (numpy.dtype)
@@ -28,7 +28,7 @@ def get_py_dtype(np_dtype):
 
         (type) : Python data type that corresponds to the specified numpy
             dtype.
-    '''
+    """
     if np_dtype.type == np.object_:
         return object
     elif hasattr(np_dtype.type(0), 'item'):
@@ -38,7 +38,7 @@ def get_py_dtype(np_dtype):
 
 
 def get_py_dtypes(data_frame):
-    '''
+    """
     Return a `pandas.DataFrame` containing Python type information for the
     columns in `data_frame`.
 
@@ -52,7 +52,7 @@ def get_py_dtypes(data_frame):
             `data_frame`, with the columns `'i'` and `'dtype'` indicating the
             index and Python type of the corresponding `data_frame` column,
             respectively.
-    '''
+    """
     df_py_dtypes = data_frame.dtypes.map(get_py_dtype).to_frame('dtype').copy()
     df_py_dtypes.loc[df_py_dtypes.dtype == object, 'dtype'] = \
         (df_py_dtypes.loc[df_py_dtypes.dtype == object].index
@@ -65,7 +65,7 @@ def get_py_dtypes(data_frame):
 
 
 def get_list_store(data_frame):
-    '''
+    """
     Return a `pandas.DataFrame` containing Python type information for the
     columns in `data_frame` and a `Gtk.ListStore` matching the contents of the
     data frame.
@@ -79,7 +79,7 @@ def get_list_store(data_frame):
         (tuple) : The first element is a data frame as returned by
             `get_py_dtypes` and the second element is a `Gtk.ListStore`
             matching the contents of the data frame.
-    '''
+    """
     df_py_dtypes = get_py_dtypes(data_frame)
     list_store = Gtk.ListStore(*df_py_dtypes.dtype)
     for i, row_i in data_frame.iterrows():
@@ -88,7 +88,7 @@ def get_list_store(data_frame):
 
 
 def add_columns(tree_view, df_py_dtypes, list_store):
-    '''
+    """
     Add columns to a `Gtk.TreeView` for the types listed in `df_py_dtypes`.
 
     Args:
@@ -101,13 +101,13 @@ def add_columns(tree_view, df_py_dtypes, list_store):
     Returns:
 
         None
-    '''
+    """
     tree_view.set_model(list_store)
 
     for column_i, (i, dtype_i) in df_py_dtypes[['i', 'dtype']].iterrows():
         tree_column_i = Gtk.TreeViewColumn(column_i)
         tree_column_i.set_name(column_i)
-        if dtype_i in (int, long):
+        if dtype_i in (int, int):
             property_name = 'text'
             cell_renderer_i = Gtk.CellRendererSpin()
         elif dtype_i == float:
@@ -130,7 +130,7 @@ def add_columns(tree_view, df_py_dtypes, list_store):
 
 def set_column_format(tree_column, model_column_index, format_str,
                       cell_renderer=None):
-    '''
+    """
     Set the text of a cell according to a [format][1] string.
 
     [1]: https://docs.python.org/2/library/string.html#formatstrings
@@ -149,7 +149,7 @@ def set_column_format(tree_column, model_column_index, format_str,
     Returns:
 
         None
-    '''
+    """
     def set_property(column, cell_renderer, list_store, iter, store_i):
         value = list_store[iter][store_i]
         cell_renderer.set_property('text', format_str.format(value=value))
@@ -164,7 +164,7 @@ def set_column_format(tree_column, model_column_index, format_str,
 
 def set_column_si_format(tree_column, model_column_index, cell_renderer=None,
                          digits=2):
-    '''
+    """
     Set the text of a numeric cell according to [SI prefixes][1]
 
     For example, `1000 -> '1.00k'`.
@@ -183,9 +183,9 @@ def set_column_si_format(tree_column, model_column_index, cell_renderer=None,
     Returns:
 
         None
-    '''
-    def set_property(column, cell_renderer, list_store, iter, store_i):
-        cell_renderer.set_property('text', si_format(list_store[iter][store_i],
+    """
+    def set_property(column, cell_renderer, list_store, itr, store_i):
+        cell_renderer.set_property('text', si_format(list_store[itr][store_i],
                                                      digits))
     if cell_renderer is None:
         cells = tree_column.get_cells()
@@ -196,9 +196,9 @@ def set_column_si_format(tree_column, model_column_index, cell_renderer=None,
                                        model_column_index)
 
 
-def on_edited_dataframe_sync(cell_renderer, iter, new_value, column,
+def on_edited_dataframe_sync(cell_renderer, itr, new_value, column,
                              df_py_dtypes, list_store, df_data):
-    '''
+    """
     Handle the `'edited'` signal from a `Gtk.CellRenderer` to:
 
      * Update the corresponding entry in the list store.
@@ -227,7 +227,7 @@ def on_edited_dataframe_sync(cell_renderer, iter, new_value, column,
     Returns:
 
         None
-    '''
+    """
     # Extract name of column (name of TreeView column must match data frame
     # column name).
     column_name = column.get_name()
@@ -237,12 +237,12 @@ def on_edited_dataframe_sync(cell_renderer, iter, new_value, column,
     if dtype == float:
         value = si_parse(new_value)
     elif dtype == bool:
-        value = not list_store[iter][i]
+        value = not list_store[itr][i]
 
-    if value == list_store[iter][i]:
+    if value == list_store[itr][i]:
         # Value has not changed.
         return False
-    list_store[iter][i] = value
+    list_store[itr][i] = value
     # Update the data frame with the new value.
-    df_data[column_name].values[int(iter)] = value
+    df_data[column_name].values[int(itr)] = value
     return True

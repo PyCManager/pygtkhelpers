@@ -1,25 +1,36 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
+"""
+    pyGtkHelpers.ui.session
+    ~~~~~~~~~~~~~~~
+
+    Session.
+
+    :copyright: 2021 by pyGtkHelpers Authors
+    :license: LGPL 2 or later (see README/COPYING/LICENSE)
+"""
+import os
+import re
+import sys
+import webbrowser
+
 from collections import OrderedDict
 from pathlib import Path
 from subprocess import Popen, PIPE
-import webbrowser
-import sys
-import os
-import re
 
 
 class Session(object):
-    '''
+    """
     This class provides an API for launching an IPython notebook process
     (non-blocking).
-    '''
+    """
     def __init__(self, daemon=False, create_dir=False, **kwargs):
-        '''
+        """
         Arguments
         ---------
          - `daemon`: Kill notebook process when `Session` object is deleted.
          - `create_dir`: Create the notebook directory, if necessary.
-        '''
+        """
         self.daemon = daemon
         if create_dir and 'notebook_dir' in kwargs:
             Path(kwargs['notebook_dir']).mkdir()
@@ -33,7 +44,7 @@ class Session(object):
     @property
     def args(self):
         args = ()
-        for k, v in self.kwargs.iteritems():
+        for k, v in self.kwargs.items():
             cli_k = k.replace('_', '-')
             if v is None:
                 args += ('--%s' % cli_k, )
@@ -42,12 +53,12 @@ class Session(object):
         return args
 
     def start(self, *args, **kwargs):
-        '''
+        """
         Launch IPython notebook server in background process.
         Arguments and keyword arguments are passed on to `Popen` call.
         By default, notebook server is launched using current working directory
         as the notebook directory.
-        '''
+        """
         if 'stderr' in kwargs:
             raise ValueError('`stderr` must not be specified, since it must be'
                              ' monitored to determine which port the notebook '
