@@ -255,21 +255,21 @@ class _ReadLine(object):
         keyval = event.keyval
 
         if not state:
-            if keyval == Gtk.keysyms.Return:
+            if keyval == Gdk.keysyms.Return:
                 self._commit()
-            elif keyval == Gtk.keysyms.Up:
+            elif keyval == Gdk.keysyms.Up:
                 self.__history(-1)
-            elif keyval == Gtk.keysyms.Down:
+            elif keyval == Gdk.keysyms.Down:
                 self.__history(1)
-            elif keyval == Gtk.keysyms.Left:
+            elif keyval == Gdk.keysyms.Left:
                 self.__move_cursor(-1)
-            elif keyval == Gtk.keysyms.Right:
+            elif keyval == Gdk.keysyms.Right:
                 self.__move_cursor(1)
-            elif keyval == Gtk.keysyms.Home:
+            elif keyval == Gdk.keysyms.Home:
                 self.__move_cursor(-10000)
-            elif keyval == Gtk.keysyms.End:
+            elif keyval == Gdk.keysyms.End:
                 self.__move_cursor(10000)
-            elif keyval == Gtk.keysyms.Tab:
+            elif keyval == Gdk.keysyms.Tab:
                 cursor = self.__get_cursor()
                 if cursor.starts_line():
                     handled = False
@@ -283,7 +283,7 @@ class _ReadLine(object):
             else:
                 handled = False
         elif state == Gtk.CONTROL_MASK:
-            if keyval == Gtk.keysyms.u:
+            if keyval == Gdk.keysyms.u:
                 start = self.__get_start()
                 end = self.__get_cursor()
                 self.__delete(start, end)
